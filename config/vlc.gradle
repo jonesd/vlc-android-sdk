@@ -1,0 +1,107 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'org.ajoberstar:gradle-git:1.7.0'
+    }
+}
+
+import org.ajoberstar.grgit.Grgit
+
+class Architecture {
+
+    String taskName
+    String architecture
+    String mode
+
+    Architecture(taskName, architecture, mode) {
+        this.taskName = taskName
+        this.architecture = architecture
+        this.mode = mode
+    }
+
+}
+
+def architectures = [
+        new Architecture('Armv7a', 'armeabi-v7a', 'release'),
+        new Architecture('Mips', 'mips', 'release'),
+        new Architecture('X86', 'x86', 'release')
+]
+
+task vlcClone {
+    group = 'Vlc'
+    description = 'Clone VLC Android source code'
+    doLast { Grgit.clone(uri: VLC_ANDROID_SCM, dir: project.ext.vlcAndroidSource) }
+    onlyIf { !project.ext.vlcAndroidSource.exists() }
+}
+
+task vlcCheckout(dependsOn: 'vlcClone') {
+    group = 'Vlc'
+    description = 'Update VLC Android source code if exists'
+    doLast {
+        try {
+            def repo = Grgit.open(project.ext.vlcSource)
+            repo.pull(rebase: true)
+        }
+        catch (RuntimeException e) {
+            logger.warn("Wasn't able to update checkout at ${project.ext.vlcSource} : ${e.getClass()}  - ${e.getLocalizedMessage()}");
+        }
+    }
+    onlyIf { project.ext.vlcSource.exists() }
+}
+
+task vlcPurge(type: Delete, dependsOn: ['vlcPurgeJava', 'vlcPurgeJni']) {
+    group = 'Vlc'
+    description = 'Delete VLC Java and jnilibs directories'
+}
+
+task vlcPurgeJava(type: Delete) {
+    group = 'Vlc'
+    description = 'Delete VLC Java directories'
+    delete 'src/main/java'
+}
+
+task vlcPurgeJni(type: Delete) {
+    group = 'Vlc'
+    description = 'Delete VLC jni directories'
+    delete 'src/main/jniLibs'
+}
+
+architectures.each {
+    def a = it
+    def compileArchitectureTaskName = "compileVlc${a.taskName}"
+    task "compileVlc${a.taskName}"(type: Exec) {
+        group = 'Vlc'
+        description = "Compile ${a.taskName} VLC architecture"
+        workingDir project.ext.vlcAndroidSource
+        commandLine './compile.sh'
+        args '-a', a.architecture
+        args a.mode
+        args '-l' // only build libvlc
+        onlyIf { project.ext.vlcAndroidSource.exists() }
+    }
+
+    task "vlcBuild${a.taskName}"(type: Copy, dependsOn: compileArchitectureTaskName) {
+        from "${project.ext.vlcAndroidSource.getAbsolutePath()}/libvlc/jni/libs/${a.architecture}/"
+        into "src/main/jniLibs/${a.architecture}/"
+        finalizedBy 'vlcCopyJavaFiles'
+        onlyIf { project.ext.vlcAndroidSource.exists() }
+    }
+}
+
+task vlcCopyJavaFiles(type: Copy) {
+    group = 'Vlc'
+    description = 'Copy source from VLC Android source code to project if exists'
+    from(project.ext.vlcAndroidSource.getAbsolutePath() + '/libvlc/src/')
+    into('src/main/java')
+    onlyIf { project.ext.vlcAndroidSource.exists() }
+}
+
+task vlcBuild() {
+    group = 'Vlc'
+    description = 'Build Vlc project and copies resulting libraries into project'
+    dependsOn { tasks.findAll { task -> task.name.startsWith('vlcBuild') } }
+}
+
+tasks.withType(Javadoc).all { enabled = false }
