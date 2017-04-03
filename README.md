@@ -1,52 +1,54 @@
 vlc-android-sdk
 ===============
 
-VLC Android SDK is pushed to Jitpack. This repository is a fork of the original [work done](https://github.com/mrmaffen/vlc-android-sdk) by 
-Enno Gottschalk [https://github.com/mrmaffen](mrmaffen) 
+This repository is a fork of the original [work done](https://github.com/mrmaffen/vlc-android-sdk) by Enno Gottschalk [https://github.com/mrmaffen](mrmaffen) (Thanks dude!)
 
-Originally this project was being used on [tomahawk-android](https://github.com/tomahawk-player/tomahawk-android) project and now also 
-on [butter-android](https://github.com/butterproject/butter-android) project. Check out those amazing projects.
+This project is being used on [tomahawk-android](https://github.com/tomahawk-player/tomahawk-android) and now is also on [butter-android](https://github.com/butterproject/butter-android).
 
-This fork will try to be more updated than the original one with stable releases produced in the VLC source code.
+This fork will try to be more updated than the original with stable releases when VLC team produce new stable releases in the main source
+ code.
 
-Reporting issues
------------------
-
-Please contact the [VLC team](https://trac.videolan.org/vlc) directly. This is only a convenience library published to Jitpack for Android.
-
-Get it via Jitpack
+Get it via JCenter
 ------------------
 
-Just add this dependency to your project and you're good to go.
+Just add this dependency to your project and you're good to go:
 
 <pre>
 dependencies {
-  compile "de.mrmaffen:vlc-android-sdk:2.1.3"
+  compile "io.butter-project:vlc-android-sdk:2.1.3"
 }
 </pre>
 
-Currently version 2.1.3 is the most stable one.
+Current version is **2.1.3**.
 
-Building the LibVLC Android SDK yourself
-----------------------------------------
+Building LibVLC Android SDK yourself
+------------------------------------
 
-To build a fresh version of the LibVLC Android SDK, please make sure that you have setup your machine correctly
-(You can ignore the steps after and including 'Building'): https://wiki.videolan.org/AndroidCompile
+*Note: Keep in mind that building VLC source code can be a daunting task if is your first time doing it.*
 
-Afterwards simply run this Gradle command:
+To build a fresh version of the *libVLC* Android SDK, please make sure that you have setup your machine correctly following the official 
+Wiki (You can ignore the steps after and including 'Building'): https://wiki.videolan.org/AndroidCompile
 
-```./gradlew buildLibVlc```
-  
-The VLC-Android and the VLC repo will now get pulled if they haven't been previously.
-After that's done the compilation process for the ABIs armeabi-v7a, x86 and armeabi gets started.
-Finally the resulting .java files will be copied over into the src/main/java folder of this project.
-The resulting .so files will be copied into src/main/jniLibs.
+Afterwards, simply run this Gradle command:
+
+```./gradlew vlcBuild```
+
+The steps that this task will do are the following:
+
+1. The *VLC-Android* and the *VLC* repo will now get pulled if they haven't been previously.
+2. After that's done, the compilation process for the ABIs *armeabi-v7a*, *armeabi*, *x86* and *mips* gets started.
+3. The resulting .so files will be copied into src/main/jniLibs.
+4. Finally, the resulting .java files will be copied over into the src/main/java folder of this project.
+
+You can see all related task to *VLC* just typing in your terminal and search for the group *VLC*:
+
+```./gradlew -q :tasks```
 
 Building a specific version of the LibVLC Android SDK       
 -----------------------------------------------------
 
-If you want to build a specific version (maybe you want a major stable release) you have to 
-checkout the vlc-android git repository at the corresponding commit:
+If you want to build a specific version (maybe you want a major stable release) you have to checkout the *vlc-android* git repository at 
+the corresponding commit:
 
 ```
 cd vlc-android          // if this folder doesn't exist yet, simply run ./gradlew cloneVlcAndroid
@@ -56,10 +58,22 @@ cd ..
 ./gradlew buildLibVlc   // build it        
 ```
 
+Reporting issues
+-----------------
+
+Please contact the [VLC team](https://trac.videolan.org/vlc) directly if you have specific issues with VLC source code. This is only a 
+convenience library for Android published to JCenter so, as long as the issue does not affect directly these gradle files, there's no 
+much help we can provide with.
+
+Contribute
+----------
+
+If you detect a bug or you want to improve the project, feel free to open a pull request.
+
 License
 -------
 
-    vlc-android-sdk Copyright (C) 2017  <name of author>
+    vlc-android-sdk Copyright (C) 2017  Enno Gottschalk, Aldo Borrero
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
