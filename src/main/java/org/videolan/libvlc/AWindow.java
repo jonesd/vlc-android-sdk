@@ -37,7 +37,6 @@ import org.videolan.libvlc.util.AndroidUtil;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@SuppressWarnings("WeakerAccess")
 public class AWindow implements IVLCVout {
     private static final String TAG = "AWindow";
 
@@ -45,7 +44,7 @@ public class AWindow implements IVLCVout {
     private static final int ID_SUBTITLES = 1;
     private static final int ID_MAX = 2;
 
-    interface SurfaceCallback {
+    public interface SurfaceCallback {
         @MainThread
         void onSurfacesCreated(AWindow vout);
         @MainThread
@@ -118,7 +117,7 @@ public class AWindow implements IVLCVout {
         }
 
         @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-        private void releaseTextureView() {
+        private void releaseSurfaceTexture() {
             if (mTextureView != null)
                 mTextureView.setSurfaceTextureListener(null);
         }
@@ -128,7 +127,7 @@ public class AWindow implements IVLCVout {
             setNativeSurface(mId, null);
             if (mSurfaceHolder != null)
                 mSurfaceHolder.removeCallback(mSurfaceHolderCallback);
-            releaseTextureView();
+            releaseSurfaceTexture();
         }
 
         public boolean isReady() {
@@ -139,7 +138,7 @@ public class AWindow implements IVLCVout {
             return mSurface;
         }
 
-        SurfaceHolder getSurfaceHolder() {
+        public SurfaceHolder getSurfaceHolder() {
             return mSurfaceHolder;
         }
 
@@ -187,7 +186,7 @@ public class AWindow implements IVLCVout {
         }
 
         private final TextureView.SurfaceTextureListener mSurfaceTextureListener =
-                AndroidUtil.isICSOrLater ? createSurfaceTextureListener() : null;
+                AndroidUtil.isICSOrLater() ? createSurfaceTextureListener() : null;
     }
 
     private final static int SURFACE_STATE_INIT = 0;
@@ -197,22 +196,15 @@ public class AWindow implements IVLCVout {
     private final SurfaceHelper[] mSurfaceHelpers;
     private final SurfaceCallback mSurfaceCallback;
     private final AtomicInteger mSurfacesState = new AtomicInteger(SURFACE_STATE_INIT);
-    private OnNewVideoLayoutListener mOnNewVideoLayoutListener = null;
     private ArrayList<IVLCVout.Callback> mIVLCVoutCallbacks = new ArrayList<IVLCVout.Callback>();
     private final Handler mHandler = new Handler(Looper.getMainLooper());
+    private final Object mNativeLock = new Object();
     /* synchronized Surfaces accessed by an other thread from JNI */
     private final Surface[] mSurfaces;
     private long mCallbackNativeHandle = 0;
     private int mMouseAction = -1, mMouseButton = -1, mMouseX = -1, mMouseY = -1;
     private int mWindowWidth = -1, mWindowHeight = -1;
 
-    /**
-     * Create an AWindow
-     *
-     * You call this directly only if you use the libvlc_media_player native API (and not the Java
-     * MediaPlayer class).
-     * @param surfaceCallback
-     */
     public AWindow(SurfaceCallback surfaceCallback) {
         mSurfaceCallback = surfaceCallback;
         mSurfaceHelpers = new SurfaceHelper[ID_MAX];
@@ -243,7 +235,7 @@ public class AWindow implements IVLCVout {
     }
 
     private void setView(int id, TextureView view) {
-        if (!AndroidUtil.isICSOrLater)
+        if (!AndroidUtil.isICSOrLater())
             throw new IllegalArgumentException("TextureView not implemented in this android version");
         ensureInitState();
         if (view == null)
@@ -314,14 +306,13 @@ public class AWindow implements IVLCVout {
 
     @Override
     @MainThread
-    public void attachViews(OnNewVideoLayoutListener onNewVideoLayoutListener) {
+    public void attachViews() {
         if (mSurfacesState.get() != SURFACE_STATE_INIT || mSurfaceHelpers[ID_VIDEO] == null)
             throw new IllegalStateException("already attached or video view not configured");
         mSurfacesState.set(SURFACE_STATE_ATTACHED);
-        synchronized (mNativeLock) {
-            mOnNewVideoLayoutListener = onNewVideoLayoutListener;
-            mNativeLock.buffersGeometryConfigured = false;
-            mNativeLock.buffersGeometryAbort = false;
+        synchronized (mBuffersGeometryCond) {
+            mBuffersGeometryCond.configured = false;
+            mBuffersGeometryCond.abort = false;
         }
         for (int id = 0; id < ID_MAX; ++id) {
             final SurfaceHelper surfaceHelper = mSurfaceHelpers[id];
@@ -332,22 +323,14 @@ public class AWindow implements IVLCVout {
 
     @Override
     @MainThread
-    public void attachViews() {
-        attachViews(null);
-    }
-
-    @Override
-    @MainThread
     public void detachViews() {
         if (mSurfacesState.get() == SURFACE_STATE_INIT)
             return;
-
         mSurfacesState.set(SURFACE_STATE_INIT);
         mHandler.removeCallbacksAndMessages(null);
-        synchronized (mNativeLock) {
-            mOnNewVideoLayoutListener = null;
-            mNativeLock.buffersGeometryAbort = true;
-            mNativeLock.notifyAll();
+        synchronized (mBuffersGeometryCond) {
+            mBuffersGeometryCond.abort = true;
+            mBuffersGeometryCond.notifyAll();
         }
         for (int id = 0; id < ID_MAX; ++id) {
             final SurfaceHelper surfaceHelper = mSurfaceHelpers[id];
@@ -391,30 +374,33 @@ public class AWindow implements IVLCVout {
         detachViews();
     }
 
-    boolean areSurfacesWaiting() {
+    protected boolean areSurfacesWaiting() {
         return mSurfacesState.get() == SURFACE_STATE_ATTACHED;
     }
 
     @Override
     public void sendMouseEvent(int action, int button, int x, int y) {
         synchronized (mNativeLock) {
-            if (mCallbackNativeHandle != 0 && (mMouseAction != action || mMouseButton != button
-                    || mMouseX != x || mMouseY != y))
-                nativeOnMouseEvent(mCallbackNativeHandle, action, button, x, y);
-            mMouseAction = action;
-            mMouseButton = button;
-            mMouseX = x;
-            mMouseY = y;
+            if (mCallbackNativeHandle != 0)
+                mAWindowNativeHandler.nativeOnMouseEvent(mCallbackNativeHandle, action, button, x, y);
+            else {
+                mMouseAction = action;
+                mMouseButton = button;
+                mMouseX = x;
+                mMouseY = y;
+            }
         }
     }
 
     @Override
     public void setWindowSize(int width, int height) {
         synchronized (mNativeLock) {
-            if (mCallbackNativeHandle != 0 && (mWindowWidth != width || mWindowHeight != height))
-                nativeOnWindowSize(mCallbackNativeHandle, width, height);
-            mWindowWidth = width;
-            mWindowHeight = height;
+            if (mCallbackNativeHandle != 0)
+                mAWindowNativeHandler.nativeOnWindowSize(mCallbackNativeHandle, width, height);
+            else {
+                mWindowWidth = width;
+                mWindowHeight = height;
+            }
         }
     }
 
@@ -430,11 +416,11 @@ public class AWindow implements IVLCVout {
         }
     }
 
-    private static class NativeLock {
-        private boolean buffersGeometryConfigured = false;
-        private boolean buffersGeometryAbort = false;
+    private static class BuffersGeometryCond {
+        private boolean configured = false;
+        private boolean abort = false;
     }
-    private final NativeLock mNativeLock = new NativeLock();
+    private final BuffersGeometryCond mBuffersGeometryCond = new BuffersGeometryCond();
 
     @Override
     public void addCallback(IVLCVout.Callback callback) {
@@ -447,305 +433,122 @@ public class AWindow implements IVLCVout {
         mIVLCVoutCallbacks.remove(callback);
     }
 
-    /**
-     * Callback called from {@link IVLCVout#sendMouseEvent}.
-     *
-     * @param nativeHandle handle passed by {@link #registerNative(long)}.
-     * @param action see ACTION_* in {@link android.view.MotionEvent}.
-     * @param button see BUTTON_* in {@link android.view.MotionEvent}.
-     * @param x x coordinate.
-     * @param y y coordinate.
-     */
-    @SuppressWarnings("JniMissingFunction")
-    private static native void nativeOnMouseEvent(long nativeHandle, int action, int button, int x, int y);
-
-    /**
-     * Callback called from {@link IVLCVout#setWindowSize}.
-     *
-     * @param nativeHandle handle passed by {@link #registerNative(long)}.
-     * @param width width of the window.
-     * @param height height of the window.
-     */
-    @SuppressWarnings("JniMissingFunction")
-    private static native void nativeOnWindowSize(long nativeHandle, int width, int height);
-
-    /**
-     * Get the valid Video surface.
-     *
-     * @return can be null if the surface was destroyed.
-     */
-    @SuppressWarnings("unused") /* used by JNI */
-    private Surface getVideoSurface() {
-        return getNativeSurface(ID_VIDEO);
+    public AWindowNativeHandler getNativeHandler() {
+        return mAWindowNativeHandler;
     }
 
-    /**
-     * Get the valid Subtitles surface.
-     *
-     * @return can be null if the surface was destroyed.
-     */
-    @SuppressWarnings("unused") /* used by JNI */
-    private Surface getSubtitlesSurface() {
-        return getNativeSurface(ID_SUBTITLES);
+    @SuppressWarnings("unused, JniMissingFunction")
+    private final AWindowNativeHandler mAWindowNativeHandler = new AWindowNativeHandler() {
+        @Override
+        protected native void nativeOnMouseEvent(long nativeHandle, int action, int button, int x, int y);
 
-    }
+        @Override
+        protected native void nativeOnWindowSize(long nativeHandle, int width, int height);
 
-    private final static int AWINDOW_REGISTER_ERROR = 0;
-    private final static int AWINDOW_REGISTER_FLAGS_SUCCESS = 0x1;
-    private final static int AWINDOW_REGISTER_FLAGS_HAS_VIDEO_LAYOUT_LISTENER = 0x2;
-
-    /**
-     * Set a callback in order to receive {@link #nativeOnMouseEvent} and {@link #nativeOnWindowSize} events.
-     *
-     * @param nativeHandle native Handle passed by {@link #nativeOnMouseEvent} and {@link #nativeOnWindowSize}, cannot be NULL
-     * @return true if callback was successfully registered
-     */
-    @SuppressWarnings("unused") /* used by JNI */
-    private int registerNative(long nativeHandle) {
-        if (nativeHandle == 0)
-            throw new IllegalArgumentException("nativeHandle is null");
-        synchronized (mNativeLock) {
-            if (mCallbackNativeHandle != 0)
-                return AWINDOW_REGISTER_ERROR;
-            mCallbackNativeHandle = nativeHandle;
-            if (mMouseAction != -1)
-                nativeOnMouseEvent(mCallbackNativeHandle, mMouseAction, mMouseButton, mMouseX, mMouseY);
-            if (mWindowWidth != -1 && mWindowHeight != -1)
-                nativeOnWindowSize(mCallbackNativeHandle, mWindowWidth, mWindowHeight);
-            int flags = AWINDOW_REGISTER_FLAGS_SUCCESS;
-
-            if (mOnNewVideoLayoutListener != null)
-                flags |= AWINDOW_REGISTER_FLAGS_HAS_VIDEO_LAYOUT_LISTENER;
-            return flags;
-        }
-    }
-
-    @SuppressWarnings("unused") /* used by JNI */
-    private void unregisterNative() {
-        synchronized (mNativeLock) {
-            if (mCallbackNativeHandle == 0)
-                throw new IllegalArgumentException("unregister called when not registered");
-            mCallbackNativeHandle = 0;
-        }
-    }
-
-    /**
-     * This method is only used for ICS and before since ANativeWindow_setBuffersGeometry doesn't work before.
-     * It is synchronous.
-     *
-     * @param surface surface returned by getVideoSurface or getSubtitlesSurface
-     * @param width surface width
-     * @param height surface height
-     * @param format color format (or PixelFormat)
-     * @return true if buffersGeometry were set (only before ICS)
-     */
-    @SuppressWarnings("unused") /* used by JNI */
-    private boolean setBuffersGeometry(final Surface surface, final int width, final int height, final int format) {
-        if (AndroidUtil.isICSOrLater)
-            return false;
-        if (width * height == 0)
-            return false;
-        Log.d(TAG, "configureSurface: " + width + "x" + height);
-
-        synchronized (mNativeLock) {
-            if (mNativeLock.buffersGeometryConfigured || mNativeLock.buffersGeometryAbort)
-                return false;
+        @Override
+        public Surface getVideoSurface() {
+            return getNativeSurface(ID_VIDEO);
         }
 
-        mHandler.post(new Runnable() {
-            private AWindow.SurfaceHelper getSurfaceHelper(Surface surface) {
-                for (int id = 0; id < ID_MAX; ++id) {
-                    final AWindow.SurfaceHelper surfaceHelper = mSurfaceHelpers[id];
-                    if (surfaceHelper != null && surfaceHelper.getSurface() == surface)
-                        return surfaceHelper;
-                }
-                return null;
-            }
+        @Override
+        public Surface getSubtitlesSurface() {
+            return getNativeSurface(ID_SUBTITLES);
+        }
 
-            @Override
-            public void run() {
-                final AWindow.SurfaceHelper surfaceHelper = getSurfaceHelper(surface);
-                final SurfaceHolder surfaceHolder = surfaceHelper != null ? surfaceHelper.getSurfaceHolder() : null;
-
-                if (surfaceHolder != null) {
-                    if (surfaceHolder.getSurface().isValid()) {
-                        if (format != 0)
-                            surfaceHolder.setFormat(format);
-                        surfaceHolder.setFixedSize(width, height);
-                    }
-                }
-
-                synchronized (mNativeLock) {
-                    mNativeLock.buffersGeometryConfigured = true;
-                    mNativeLock.notifyAll();
-                }
-            }
-        });
-
-        try {
+        @Override
+        public boolean setCallback(long nativeHandle) {
             synchronized (mNativeLock) {
-                while (!mNativeLock.buffersGeometryConfigured && !mNativeLock.buffersGeometryAbort)
-                    mNativeLock.wait();
-                mNativeLock.buffersGeometryConfigured = false;
-            }
-        } catch (InterruptedException e) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Set the video Layout.
-     * This call will result of{@link IVLCVout.OnNewVideoLayoutListener#onNewVideoLayout(IVLCVout, int, int, int, int, int, int)}
-     * being called from the main thread.
-     *
-     * @param width Frame width
-     * @param height Frame height
-     * @param visibleWidth Visible frame width
-     * @param visibleHeight Visible frame height
-     * @param sarNum Surface aspect ratio numerator
-     * @param sarDen Surface aspect ratio denominator
-     */
-    @SuppressWarnings("unused") /* used by JNI */
-    private void setVideoLayout(final int width, final int height, final int visibleWidth,
-                                final int visibleHeight, final int sarNum, final int sarDen) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                /* No need to synchronize here, mOnNewVideoLayoutListener is only set from MainThread */
-                if (mOnNewVideoLayoutListener != null)
-                    mOnNewVideoLayoutListener.onNewVideoLayout(AWindow.this, width, height,
-                            visibleWidth, visibleHeight, sarNum, sarDen);
-            }
-        });
-    }
-
-    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-    private static class SurfaceTextureThread extends Thread
-            implements SurfaceTexture.OnFrameAvailableListener {
-        SurfaceTexture mSurfaceTexture = null;
-
-        final int mTexName;
-        boolean mFrameAvailable = false;
-        Looper mLooper = null;
-
-        private SurfaceTextureThread(int texName) {
-            mTexName = texName;
-        }
-
-        @Override
-        public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-            synchronized (this) {
-                if (mFrameAvailable)
-                    throw new IllegalStateException("An available frame was not updated");
-                mFrameAvailable = true;
-                notify();
-            }
-        }
-
-        @Override
-        public void run() {
-            Looper.prepare();
-
-            synchronized (this) {
-                mLooper = Looper.myLooper();
-                mSurfaceTexture = new SurfaceTexture(mTexName);
-                mSurfaceTexture.setOnFrameAvailableListener(this);
-                notify();
-            }
-
-            Looper.loop();
-
-            mSurfaceTexture.setOnFrameAvailableListener(null);
-            mSurfaceTexture.release();
-        }
-
-        void release() {
-            synchronized (this) {
-                while (mLooper == null) {
-                    try {
-                        wait();
-                    } catch (InterruptedException ignored) {
-                    }
+                if (mCallbackNativeHandle != 0 && nativeHandle != 0)
+                    return false;
+                mCallbackNativeHandle = nativeHandle;
+                if (mCallbackNativeHandle != 0) {
+                    if (mMouseAction != -1)
+                        nativeOnMouseEvent(mCallbackNativeHandle, mMouseAction, mMouseButton, mMouseX, mMouseY);
+                    if (mWindowWidth != -1 && mWindowHeight != -1)
+                        nativeOnWindowSize(mCallbackNativeHandle, mWindowWidth, mWindowHeight);
                 }
+                mMouseAction = mMouseButton = mMouseX = mMouseY = -1;
+                mWindowWidth = mWindowHeight = -1;
             }
-            mLooper.quit();
-            try {
-                join();
-            } catch (InterruptedException ignored) {
-            }
-        }
-
-        boolean waitAndUpdateTexImage(float[] transformMatrix) {
-            synchronized (this) {
-                while (!mFrameAvailable) {
-                    try {
-                        wait(500);
-                        if (!mFrameAvailable)
-                            return false;
-                    } catch (InterruptedException ignored) {
-                    }
-                }
-                mFrameAvailable = false;
-            }
-            mSurfaceTexture.updateTexImage();
-            mSurfaceTexture.getTransformMatrix(transformMatrix);
             return true;
         }
 
-        Surface getSurface() {
-            synchronized (this) {
-                while (mSurfaceTexture == null) {
-                    try {
-                        wait();
-                    } catch (InterruptedException ignored) {
+        @Override
+        public boolean setBuffersGeometry(final Surface surface, final int width, final int height, final int format) {
+            if (AndroidUtil.isICSOrLater())
+                return false;
+            if (width * height == 0)
+                return false;
+            Log.d(TAG, "configureSurface: " + width + "x" + height);
+
+            synchronized (mBuffersGeometryCond) {
+                if (mBuffersGeometryCond.configured || mBuffersGeometryCond.abort)
+                    return false;
+            }
+
+            mHandler.post(new Runnable() {
+                private SurfaceHelper getSurfaceHelper(Surface surface) {
+                    for (int id = 0; id < ID_MAX; ++id) {
+                        final SurfaceHelper surfaceHelper = mSurfaceHelpers[id];
+                        if (surfaceHelper != null && surfaceHelper.getSurface() == surface)
+                            return surfaceHelper;
+                    }
+                    return null;
+                }
+
+                @Override
+                public void run() {
+                    final SurfaceHelper surfaceHelper = getSurfaceHelper(surface);
+                    final SurfaceHolder surfaceHolder = surfaceHelper != null ? surfaceHelper.getSurfaceHolder() : null;
+
+                    if (surfaceHolder != null) {
+                        if (surfaceHolder.getSurface().isValid()) {
+                            if (format != 0)
+                                surfaceHolder.setFormat(format);
+                            surfaceHolder.setFixedSize(width, height);
+                        }
+                    }
+
+                    synchronized (mBuffersGeometryCond) {
+                        mBuffersGeometryCond.configured = true;
+                        mBuffersGeometryCond.notifyAll();
                     }
                 }
-                return new Surface(mSurfaceTexture);
+            });
+
+            try {
+                synchronized (mBuffersGeometryCond) {
+                    while (!mBuffersGeometryCond.configured && !mBuffersGeometryCond.abort)
+                        mBuffersGeometryCond.wait();
+                    mBuffersGeometryCond.configured = false;
+                }
+            } catch (InterruptedException e) {
+                return false;
             }
+            return true;
         }
-    }
 
-    /**
-     * Create a SurfaceTextureThread
-     *
-     * @param texName the OpenGL texture object name (e.g. generated via glGenTextures)
-     * @return a valid and started SurfaceTextureThread
-     */
-    @SuppressWarnings("unused") /* used by JNI */
-    static private SurfaceTextureThread SurfaceTextureThread_create(int texName) {
-        if (AndroidUtil.isICSOrLater) {
-            final SurfaceTextureThread st = new SurfaceTextureThread(texName);
-            st.start();
-            return st;
-        } else
-            return null;
-    }
+        @Override
+        public void setWindowLayout(final int width, final int height, final int visibleWidth,
+                                    final int visibleHeight, final int sarNum, final int sarDen) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    for (IVLCVout.Callback cb : mIVLCVoutCallbacks)
+                        cb.onNewLayout(AWindow.this, width, height, visibleWidth, visibleHeight, sarNum, sarDen);
+                }
+            });
+        }
 
-    /**
-     * Release the SurfaceTexture and join the thread
-     */
-    @SuppressWarnings("unused") /* used by JNI */
-    static private void SurfaceTextureThread_release(SurfaceTextureThread st) {
-        st.release();
-    }
-
-    /**
-     * Wait for a frame and update the TexImage
-     *
-     * @return true on success, false on error or timeout
-     */
-    @SuppressWarnings("unused") /* used by JNI */
-    static private boolean SurfaceTextureThread_waitAndUpdateTexImage(SurfaceTextureThread st,
-                                                                      float[] transformMatrix) {
-        return st.waitAndUpdateTexImage(transformMatrix);
-    }
-
-    /**
-     * Get a Surface from the SurfaceTexture
-     */
-    @SuppressWarnings("unused") /* used by JNI */
-    static private Surface SurfaceTextureThread_getSurface(SurfaceTextureThread st) {
-        return st.getSurface();
-    }
+        @Override
+        public void sendHardwareAccelerationError() {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    for (IVLCVout.Callback cb : mIVLCVoutCallbacks)
+                        cb.onHardwareAccelerationError(AWindow.this);
+                }
+            });
+        }
+    };
 }

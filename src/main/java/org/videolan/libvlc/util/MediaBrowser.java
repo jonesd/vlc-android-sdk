@@ -21,10 +21,8 @@
 package org.videolan.libvlc.util;
 
 import android.net.Uri;
-import android.os.Handler;
 import android.support.annotation.MainThread;
 import android.util.Log;
-
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaDiscoverer;
@@ -41,7 +39,6 @@ public class MediaBrowser {
     private MediaList mBrowserMediaList;
     private Media mMedia;
     private EventListener mEventListener;
-    private Handler mHandler;
     private boolean mAlive;
 
     private static final String IGNORE_LIST_OPTION =  ":ignore-filetypes=";
@@ -78,29 +75,11 @@ public class MediaBrowser {
         void onBrowseEnd();
     }
 
-     /**
-     *
-     * @param libvlc The LibVLC instance to use
-     * @param listener The Listener which will receive callbacks
-     *
-     * With this constructor, callbacks will be executed in the main thread
-     */
     public MediaBrowser(LibVLC libvlc, EventListener listener) {
         mLibVlc = libvlc;
         mLibVlc.retain();
         mEventListener = listener;
         mAlive = true;
-    }
-
-    /**
-     *
-     * @param libvlc The LibVLC instance to use
-     * @param listener The Listener which will receive callbacks
-     * @param handler Optional Handler in which callbacks will be posted. If set to null, a Handler will be created running on the main thread
-     */
-    public MediaBrowser(LibVLC libvlc, EventListener listener, Handler handler) {
-        this(libvlc, listener);
-        mHandler = handler;
     }
 
     private void reset() {
@@ -145,7 +124,7 @@ public class MediaBrowser {
         MediaDiscoverer md = new MediaDiscoverer(mLibVlc, discovererName);
         mMediaDiscoverers.add(md);
         final MediaList ml = md.getMediaList();
-        ml.setEventListener(mDiscovererMediaListEventListener, mHandler);
+        ml.setEventListener(mDiscovererMediaListEventListener);
         ml.release();
         md.start();
     }
@@ -181,7 +160,7 @@ public class MediaBrowser {
      * Browse to the specified local path starting with '/'.
      *
      * @param path
-     * @param flags see {@link MediaBrowser.Flag}
+     * @param flags see {@link Flag}
      */
     @MainThread
     public void browse(String path, int flags) {
@@ -194,7 +173,7 @@ public class MediaBrowser {
      * Browse to the specified uri.
      *
      * @param uri
-     * @param flags see {@link MediaBrowser.Flag}
+     * @param flags see {@link Flag}
      */
     @MainThread
     public void browse(Uri uri, int flags) {
@@ -207,7 +186,7 @@ public class MediaBrowser {
      * Browse to the specified media.
      *
      * @param media Can be a media returned by MediaBrowser.
-     * @param flags see {@link MediaBrowser.Flag}
+     * @param flags see {@link Flag}
      */
     @MainThread
     public void browse(Media media, int flags) {
@@ -223,7 +202,7 @@ public class MediaBrowser {
             mediaFlags |= Media.Parse.DoInteract;
         reset();
         mBrowserMediaList = media.subItems();
-        mBrowserMediaList.setEventListener(mBrowserMediaListEventListener, mHandler);
+        mBrowserMediaList.setEventListener(mBrowserMediaListEventListener);
         media.parseAsync(mediaFlags, 0);
         mMedia = media;
     }
@@ -293,8 +272,19 @@ public class MediaBrowser {
              */
             switch (mlEvent.type) {
             case MediaList.Event.ItemAdded:
-                mDiscovererMediaArray.add(mlEvent.media);
-                mEventListener.onMediaAdded(index, mlEvent.media);
+                /* one item can be found by severals discoverers */
+                boolean found = false;
+                for (Media media : mDiscovererMediaArray) {
+                    if (media.getUri().toString().equalsIgnoreCase(mlEvent.media.getUri().toString())) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    mDiscovererMediaArray.add(mlEvent.media);
+                    index = mDiscovererMediaArray.size() - 1;
+                }if (index != -1)
+                    mEventListener.onMediaAdded(index, mlEvent.media);
                 break;
             case MediaList.Event.ItemDeleted:
                 index = mDiscovererMediaArray.indexOf(mlEvent.media);

@@ -25,7 +25,6 @@ group = GROUP
 
 repositories {
     mavenCentral()
-    maven { url 'https://jitpack.io' }
 }
 
 android {
@@ -87,12 +86,12 @@ install {
 
 bintray {
     user = System.getenv('BINTRAY_USER')
-    key = System.getenv('BINTRAY_KEY')
+    key =  System.getenv('BINTRAY_KEY')
     pkg {
         repo = 'maven'
         name = ARTIFACT
-        userOrg = user
-        licenses = ['GPLv3']
+        userOrg = ORGANIZATION
+        licenses = ['GPL-3.0']
         vcsUrl = SCM_URL
         version {
             name = VERSION_NAME

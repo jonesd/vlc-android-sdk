@@ -5,21 +5,27 @@ This repository is a fork of the original [work done](https://github.com/mrmaffe
 
 This project is being used on [tomahawk-android](https://github.com/tomahawk-player/tomahawk-android) and now is also on [butter-android](https://github.com/butterproject/butter-android).
 
-This fork will try to be more updated than the original with stable releases when VLC team produce new stable releases in the main source
- code.
-
 Get it via JCenter
 ------------------
 
 Just add this dependency to your project and you're good to go:
 
 <pre>
+buildscript {
+  repositories {
+    maven {
+      url  "http://dl.bintray.com/butter-project/maven" 
+    }
+  }
+}
+
 dependencies {
-  compile "io.butter-project:vlc-android-sdk:2.1.3"
+  compile "com.butterproject:vlc-android-sdk:2.0.6"
 }
 </pre>
 
-Current version is **2.1.3**.
+Current stable version is **2.0.6**. Although, there are newer versions of the **libVLC** library none of them has been officially pushed to the 
+main VLC Android application. So until this happens, it doesn't make sense to update this project.
 
 Building LibVLC Android SDK yourself
 ------------------------------------
@@ -51,12 +57,14 @@ If you want to build a specific version (maybe you want a major stable release) 
 the corresponding commit:
 
 ```
-cd vlc-android          // if this folder doesn't exist yet, simply run ./gradlew cloneVlcAndroid
+cd vlc-android          // if this folder doesn't exist yet, simply run ./gradlew vlcCloneAndroid
 git tag                 // to list all release versions
 git checkout {tag-name} // to checkout the git repo at the given tag
 cd ..
-./gradlew buildLibVlc   // build it        
+./gradlew vlcBuild{architecture} // build it, where architecture can be arm, arm64, mips, mips64, x86, X86_64     
 ```
+
+By default, when you clone using the command `./gradlew vlcCloneAndroid` it will checkout automatically to the most stable version possible.
 
 Reporting issues
 -----------------
@@ -73,7 +81,7 @@ If you detect a bug or you want to improve the project, feel free to open a pull
 License
 -------
 
-    vlc-android-sdk Copyright (C) 2017  Enno Gottschalk, Aldo Borrero
+    vlc-android-sdk Copyright (C) 2017  VLC authors, Enno Gottschalk, Aldo Borrero
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

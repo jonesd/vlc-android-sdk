@@ -27,9 +27,9 @@ def architectures = [
         new Architecture('Arm', 'armeabi-v7a', '--release'),
         new Architecture('Arm64', 'arm64-v8a', '--release'),
         new Architecture('Mips', 'mips', '--release'),
-//        new Architecture('Mips64', 'mips64', '--release'), // Not needed for now
+        new Architecture('Mips64', 'mips64', '--release'),
         new Architecture('X86', 'x86', '--release'),
-//        new Architecture('X86_64', 'x86_64', '--release') // Not needed for now
+        new Architecture('X86_64', 'x86_64', '--release')
 ]
 
 tasks.withType(Javadoc).all { enabled = false }
@@ -37,7 +37,10 @@ tasks.withType(Javadoc).all { enabled = false }
 task vlcClone {
     group = 'Vlc'
     description = 'Clone VLC Android source code'
-    doLast { Grgit.clone(uri: VLC_ANDROID_SCM, dir: project.ext.vlcAndroidSource) }
+    doLast {
+      def repo = Grgit.clone(uri: VLC_ANDROID_SCM, dir: project.ext.vlcAndroidSource)
+      repo.checkout branch: "tags/${VERSION_NAME}"
+    }
     onlyIf { !project.ext.vlcAndroidSource.exists() }
 }
 
@@ -76,7 +79,7 @@ task vlcPurgeJni(type: Delete) {
 architectures.each {
     def a = it
     def compileArchitectureTaskName = "vlcCompile${a.taskName}"
-    task "vlcCompile${a.taskName}"(type: Exec) {
+    task "${compileArchitectureTaskName}"(type: Exec) {
         group = 'Vlc'
         description = "Compile ${a.taskName} VLC architecture"
         workingDir project.ext.vlcAndroidSource

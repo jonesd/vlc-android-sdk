@@ -1,5 +1,5 @@
 ext {
-    appCompatVersion = "25.3.0"
+    appCompatVersion = "25.3.1"
     buildToolsVersion = "25.0.0"
     targetSdk = 25
     compileSdk = 25
