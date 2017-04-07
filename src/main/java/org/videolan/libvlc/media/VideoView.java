@@ -30,7 +30,6 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnInfoListener;
 import android.media.MediaPlayer.OnPreparedListener;
-
 import android.net.Uri;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -40,186 +39,155 @@ import android.view.SurfaceView;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.MediaController;
-
-
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
 
 import java.io.InputStream;
 import java.util.Map;
 
-public class VideoView extends SurfaceView
-        implements MediaController.MediaPlayerControl {
+public class VideoView extends SurfaceView implements MediaController.MediaPlayerControl {
 
-    private static LibVLC sLibVLC;
+  private static LibVLC sLibVLC;
 
-    public VideoView(Context context) {
-        super(context);
-        sLibVLC = new LibVLC(context, null);
-    }
+  public VideoView(Context context) {
+    super(context);
+    sLibVLC = new LibVLC(context, null);
+  }
 
-    public VideoView(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
+  public VideoView(Context context, AttributeSet attrs) {
+    this(context, attrs, 0);
+  }
 
-    public VideoView(Context context, AttributeSet attrs, int defStyleAttr) {
-        this(context, attrs, defStyleAttr, 0);
-    }
+  public VideoView(Context context, AttributeSet attrs, int defStyleAttr) {
+    this(context, attrs, defStyleAttr, 0);
+  }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public VideoView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-    }
+  @TargetApi(Build.VERSION_CODES.LOLLIPOP) public VideoView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    super(context, attrs, defStyleAttr, defStyleRes);
+  }
 
-    @Override
-    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-    public void onInitializeAccessibilityEvent(AccessibilityEvent event) {
-        super.onInitializeAccessibilityEvent(event);
-    }
+  @Override @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH) public void onInitializeAccessibilityEvent(AccessibilityEvent event) {
+    super.onInitializeAccessibilityEvent(event);
+  }
 
-    @Override
-    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-    public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
-        super.onInitializeAccessibilityNodeInfo(info);
-    }
+  @Override @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH) public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
+    super.onInitializeAccessibilityNodeInfo(info);
+  }
 
-    public int resolveAdjustedSize(int desiredSize, int measureSpec) {
-        return getDefaultSize(desiredSize, measureSpec);
-    }
+  @Override public boolean onKeyDown(int keyCode, KeyEvent event) {
+    return super.onKeyDown(keyCode, event);
+  }
 
-    public void setVideoPath(String path) {
-        final Media media = new Media(sLibVLC, path);
-    }
+  @Override public boolean onTrackballEvent(MotionEvent ev) {
+    return super.onTrackballEvent(ev);
+  }
 
-    public void setVideoURI(Uri uri) {
-        final Media media = new Media(sLibVLC, uri);
-    }
+  @Override public boolean onTouchEvent(MotionEvent ev) {
+    return super.onTouchEvent(ev);
+  }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void setVideoURI(Uri uri, Map<String, String> headers) {
-        setVideoURI(uri);
-    }
+  @Override protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+    super.onLayout(changed, left, top, right, bottom);
+  }
 
-    public void addSubtitleSource(InputStream is, MediaFormat format) {
+  public int resolveAdjustedSize(int desiredSize, int measureSpec) {
+    return getDefaultSize(desiredSize, measureSpec);
+  }
 
-    }
+  public void setVideoPath(String path) {
+    final Media media = new Media(sLibVLC, path);
+  }
 
-    public void setMediaController(MediaController controller) {
-    }
+  public void setVideoURI(Uri uri) {
+    final Media media = new Media(sLibVLC, uri);
+  }
 
-    public void setOnPreparedListener(OnPreparedListener l) {
-    }
+  @TargetApi(Build.VERSION_CODES.LOLLIPOP) public void setVideoURI(Uri uri, Map<String, String> headers) {
+    setVideoURI(uri);
+  }
 
-    public void setOnCompletionListener(OnCompletionListener l) {
-    }
+  public void addSubtitleSource(InputStream is, MediaFormat format) {
 
-    public void setOnErrorListener(OnErrorListener l) {
-    }
+  }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    public void setOnInfoListener(OnInfoListener l) {
-    }
+  public void setMediaController(MediaController controller) {
+  }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent ev) {
-        return super.onTouchEvent(ev);
-    }
+  public void setOnPreparedListener(OnPreparedListener l) {
+  }
 
-    @Override
-    public boolean onTrackballEvent(MotionEvent ev) {
-        return super.onTrackballEvent(ev);
-    }
+  public void setOnCompletionListener(OnCompletionListener l) {
+  }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        return super.onKeyDown(keyCode, event);
-    }
+  public void setOnErrorListener(OnErrorListener l) {
+  }
 
-    @Override
-    public void start() {
-    }
+  @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1) public void setOnInfoListener(OnInfoListener l) {
+  }
 
-    @Override
-    public void pause() {
-    }
+  @Override public void start() {
+  }
 
-    public void stopPlayback() {
-    }
+  @Override public void pause() {
+  }
 
-    @TargetApi(Build.VERSION_CODES.FROYO)
-    public void suspend() {
-    }
+  @Override public int getDuration() {
+    return -1;
+  }
 
-    public void resume() {
-    }
+  @Override public int getCurrentPosition() {
+    return 0;
+  }
 
-    @Override
-    public int getDuration() {
-        return -1;
-    }
+  @Override public void seekTo(int msec) {
+  }
 
-    @Override
-    public int getCurrentPosition() {
-        return 0;
-    }
+  @Override public boolean isPlaying() {
+    return false;
+  }
 
-    @Override
-    public void seekTo(int msec) {
-    }
+  @Override public int getBufferPercentage() {
+    return 0;
+  }
 
-    @Override
-    public boolean isPlaying() {
-        return false;
-    }
+  @Override public boolean canPause() {
+    return false;
+  }
 
-    @Override
-    public int getBufferPercentage() {
-        return 0;
-    }
+  @Override public boolean canSeekBackward() {
+    return false;
+  }
 
-    @Override
-    public boolean canPause() {
-        return false;
-    }
+  @Override public boolean canSeekForward() {
+    return false;
+  }
 
-    @Override
-    public boolean canSeekBackward() {
-        return false;
-    }
+  @Override @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2) public int getAudioSessionId() {
+    return 0;
+  }
 
-    @Override
-    public boolean canSeekForward() {
-        return false;
-    }
+  public void stopPlayback() {
+  }
 
-    @Override
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    public int getAudioSessionId() {
-        return 0;
-    }
+  @TargetApi(Build.VERSION_CODES.FROYO) public void suspend() {
+  }
 
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-    }
+  public void resume() {
+  }
 
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-    }
+  @Override protected void onAttachedToWindow() {
+    super.onAttachedToWindow();
+  }
 
-    @Override
-    public void draw(Canvas canvas) {
-        super.draw(canvas);
-    }
+  @Override protected void onDetachedFromWindow() {
+    super.onDetachedFromWindow();
+  }
 
-    @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
-    }
+  @Override protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+  }
 
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    }
+  @Override public void draw(Canvas canvas) {
+    super.draw(canvas);
+  }
 }

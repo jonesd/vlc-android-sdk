@@ -23,13 +23,12 @@ package org.videolan.libvlc.util;
 import android.net.Uri;
 import android.support.annotation.MainThread;
 import android.util.Log;
-
-import java.util.ArrayList;
-
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaDiscoverer;
 import org.videolan.libvlc.MediaList;
+
+import java.util.ArrayList;
 
 public class MediaBrowser {
     private static final String TAG = "MediaBrowser";
@@ -161,7 +160,7 @@ public class MediaBrowser {
      * Browse to the specified local path starting with '/'.
      *
      * @param path
-     * @param flags see {@link MediaBrowser.Flag}
+     * @param flags see {@link Flag}
      */
     @MainThread
     public void browse(String path, int flags) {
@@ -174,7 +173,7 @@ public class MediaBrowser {
      * Browse to the specified uri.
      *
      * @param uri
-     * @param flags see {@link MediaBrowser.Flag}
+     * @param flags see {@link Flag}
      */
     @MainThread
     public void browse(Uri uri, int flags) {
@@ -187,7 +186,7 @@ public class MediaBrowser {
      * Browse to the specified media.
      *
      * @param media Can be a media returned by MediaBrowser.
-     * @param flags see {@link MediaBrowser.Flag}
+     * @param flags see {@link Flag}
      */
     @MainThread
     public void browse(Media media, int flags) {

@@ -87,7 +87,7 @@ public class MediaPlayer extends VLCObject<MediaPlayer.Event> {
         }
     }
 
-    public interface EventListener extends VLCEvent.Listener<MediaPlayer.Event> {}
+    public interface EventListener extends VLCEvent.Listener<Event> {}
 
     public static class Position {
         public static final int Disable = -1;
@@ -572,10 +572,10 @@ public class MediaPlayer extends VLCObject<MediaPlayer.Event> {
         if (!enabled) {
             setVideoTrack(-1);
         } else if (getVideoTrack() == -1) {
-            final MediaPlayer.TrackDescription tracks[] = getVideoTracks();
+            final TrackDescription tracks[] = getVideoTracks();
 
             if (tracks != null) {
-                for (MediaPlayer.TrackDescription track : tracks) {
+                for (TrackDescription track : tracks) {
                     if (track.id != -1) {
                         setVideoTrack(track.id);
                         /* HACK: flush when activating a video track. This will force an
@@ -722,7 +722,7 @@ public class MediaPlayer extends VLCObject<MediaPlayer.Event> {
     /**
      * Add a slave (or subtitle) to the current media player.
      *
-     * @param type see {@link org.videolan.libvlc.Media.Slave.Type}
+     * @param type see {@link Media.Slave.Type}
      * @param uri a valid RFC 2396 Uri
      * @return true on success.
      */
@@ -733,7 +733,7 @@ public class MediaPlayer extends VLCObject<MediaPlayer.Event> {
     /**
      * Add a slave (or subtitle) to the current media player.
      *
-     * @param type see {@link org.videolan.libvlc.Media.Slave.Type}
+     * @param type see {@link Media.Slave.Type}
      * @param path a local path
      * @return true on success.
      */

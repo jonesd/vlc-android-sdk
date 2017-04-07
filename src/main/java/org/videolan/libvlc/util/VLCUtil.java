@@ -63,9 +63,9 @@ public class VLCUtil {
     public static String[] getABIList() {
         final boolean hasABI2 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO;
         final String[] abis = new String[hasABI2 ? 2 : 1];
-        abis[0] = android.os.Build.CPU_ABI;
+        abis[0] = Build.CPU_ABI;
         if (hasABI2)
-            abis[1] = android.os.Build.CPU_ABI2;
+            abis[1] = Build.CPU_ABI2;
         return abis;
     }
 
