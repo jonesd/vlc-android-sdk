@@ -22,3 +22,9 @@ test:
   override:
     - config/circleci/run-tests.sh:
         parallel: true
+
+deployment:
+  production:
+    branch: master
+    commands:
+      - ./gradlew bintrayUpload
