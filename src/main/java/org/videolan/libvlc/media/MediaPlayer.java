@@ -28,15 +28,13 @@ import android.media.MediaFormat;
 import android.media.TimedText;
 import android.net.Uri;
 import android.os.Parcel;
-import android.os.Parcelable;
 import android.view.Surface;
 import android.view.SurfaceHolder;
-import org.videolan.libvlc.LibVLC;
-import org.videolan.libvlc.Media;
-
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.Map;
+import org.videolan.libvlc.LibVLC;
+import org.videolan.libvlc.Media;
 
 public class MediaPlayer {
 
@@ -227,7 +225,7 @@ public class MediaPlayer {
   public void setAuxEffectSendLevel(float level) {
   }
 
-  static public class TrackInfo implements Parcelable {
+  static public class TrackInfo {
 
     public static final int MEDIA_TRACK_TYPE_UNKNOWN = 0;
     public static final int MEDIA_TRACK_TYPE_VIDEO = 1;
@@ -248,13 +246,6 @@ public class MediaPlayer {
 
     public MediaFormat getFormat() {
       return null;
-    }
-
-    @Override public int describeContents() {
-      return 0;
-    }
-
-    @Override public void writeToParcel(Parcel dest, int flags) {
     }
 
     @Override public String toString() {
