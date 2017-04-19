@@ -4,7 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.0'
+        classpath 'com.android.tools.build:gradle:2.3.1'
     }
 }
 
@@ -17,8 +17,6 @@ apply from: './config/dependencies.gradle'
 apply from: './config/vlc.gradle'
 
 apply plugin: 'com.android.library'
-apply plugin: 'com.jfrog.bintray'
-apply plugin: 'com.github.dcendents.android-maven'
 
 version = VERSION_NAME
 group = GROUP
@@ -51,53 +49,81 @@ dependencies {
     compile "com.android.support:support-annotations:${rootProject.ext.supportAnnotationVersion}"
 }
 
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key =  System.getenv('BINTRAY_KEY')
+
+    publish = true
+
+    configurations = ['archives']
+    pkg {
+        repo = 'maven'
+        name = ARTIFACT
+        desc = DESCRIPTION
+        userOrg = ORGANIZATION
+        websiteUrl = REPO_URL
+        issueTrackerUrl = URL_ISSUES
+        vcsUrl = SCM_URL
+        licenses = ['GPL-3.0']
+        labels = ['android', 'vlc', 'video', 'player']
+        publicDownloadNumbers = true
+
+        githubRepo = 'butterproject/vlc-android-sdk'
+        githubReleaseNotesFile = 'README.md'
+    }
+}
+
 install {
     repositories.mavenInstaller {
-        pom.project {
-            name VERSION_NAME
-            description DESCRIPTION
-            url URL
-
-            packaging PACKAGING
-            groupId GROUP
-            artifactId ARTIFACT
-            version VERSION_NAME
-
-            licenses {
-                license {
-                    name LICENSE_NAME
-                    url LICENSE_URL
-                    distribution 'repo'
+        pom {
+            project {
+                packaging PACKAGING
+                artifactId ARTIFACT
+                name PROJECT_NAME
+                url REPO_URL
+                licenses {
+                    license {
+                        name LICENSE_NAME
+                        url LICENSE_URL
+                        distribution 'repo'
+                    }
                 }
-            }
-            scm {
-                connection SCM_URL
-                url URL
-
-            }
-            developers {
-                developer {
-                    name DEVELOPER
+                developers {
+                    developer {
+                        id "aldoborrero"
+                        name "Aldo Borrero"
+                    }
+                    developer {
+                        id "blazsolar"
+                        name "Blaz Solar"
+                    }
+                }
+                scm {
+                    url REPO_URL
+                    connection SCM_URL
+                    developerConnection SCM_URL
                 }
             }
         }
     }
 }
 
-bintray {
-    user = System.getenv('BINTRAY_USER')
-    key =  System.getenv('BINTRAY_KEY')
-    pkg {
-        repo = 'maven'
-        name = ARTIFACT
-        userOrg = ORGANIZATION
-        licenses = ['GPL-3.0']
-        vcsUrl = SCM_URL
-        version {
-            name = VERSION_NAME
-            desc = DESCRIPTION
-            released = new Date()
-            vcsTag = VERSION_NAME
-        }
-    }
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    archives javadocJar
+    archives sourcesJar
 }
