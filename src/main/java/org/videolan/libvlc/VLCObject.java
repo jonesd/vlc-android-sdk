@@ -25,14 +25,24 @@ import android.os.Looper;
 
 import java.lang.ref.WeakReference;
 
-@SuppressWarnings("JniMissingFunction") abstract class VLCObject<T extends VLCEvent> {
-
+@SuppressWarnings("JniMissingFunction")
+abstract class VLCObject<T extends VLCEvent> {
   private VLCEvent.Listener<T> mEventListener = null;
   private Handler mHandler = null;
+  final LibVLC mLibVLC;
   private int mNativeRefCount = 1;
 
-  /* JNI */
-  @SuppressWarnings("unused") /* Used from JNI */ private long mInstance = 0;
+  protected VLCObject(LibVLC libvlc) {
+    mLibVLC = libvlc;
+  }
+
+  protected VLCObject(VLCObject parent) {
+    mLibVLC = parent.mLibVLC;
+  }
+
+  protected VLCObject() {
+    mLibVLC = null;
+  }
 
   /**
    * Returns true if native object is released
@@ -49,9 +59,8 @@ import java.lang.ref.WeakReference;
     if (mNativeRefCount > 0) {
       mNativeRefCount++;
       return true;
-    } else {
+    } else
       return false;
-    }
   }
 
   /**
@@ -64,12 +73,14 @@ import java.lang.ref.WeakReference;
   public final void release() {
     int refCount = -1;
     synchronized (this) {
-      if (mNativeRefCount == 0) return;
+      if (mNativeRefCount == 0)
+        return;
       if (mNativeRefCount > 0) {
         refCount = --mNativeRefCount;
       }
       // clear event list
-      if (refCount == 0) setEventListener(null);
+      if (refCount == 0)
+        setEventListener(null);
     }
     if (refCount == 0) {
       // detach events when not synchronized since onEvent is executed synchronized
@@ -87,9 +98,22 @@ import java.lang.ref.WeakReference;
    * @param listener see {@link VLCEvent.Listener}
    */
   protected synchronized void setEventListener(VLCEvent.Listener<T> listener) {
-    if (mHandler != null) mHandler.removeCallbacksAndMessages(null);
+    setEventListener(listener, null);
+  }
+
+  /**
+   * Set an event listener and an executor Handler
+   * @param listener see {@link VLCEvent.Listener}
+   * @param handler Handler in which events are sent. If null, a handler will be created running on the main thread
+   */
+  protected synchronized void setEventListener(VLCEvent.Listener<T> listener, Handler handler) {
+    if (mHandler != null)
+      mHandler.removeCallbacksAndMessages(null);
     mEventListener = listener;
-    if (mEventListener != null && mHandler == null) mHandler = new Handler(Looper.getMainLooper());
+    if (mEventListener == null)
+      mHandler = null;
+    else if (mHandler == null)
+      mHandler = handler != null ? handler : new Handler(Looper.getMainLooper());
   }
 
   /**
@@ -98,9 +122,10 @@ import java.lang.ref.WeakReference;
    * @param eventType event type
    * @param arg1 first argument
    * @param arg2 second argument
+   * @param argf1 first float argument
    * @return Event that will be dispatched to listeners
    */
-  protected abstract T onEventNative(int eventType, long arg1, float arg2);
+  protected abstract T onEventNative(int eventType, long arg1, long arg2, float argf1);
 
   /**
    * Called when native object is released (refcount is 0).
@@ -109,12 +134,15 @@ import java.lang.ref.WeakReference;
    */
   protected abstract void onReleaseNative();
 
-  private synchronized void dispatchEventFromNative(int eventType, long arg1, float arg2) {
-    if (isReleased()) return;
-    final T event = onEventNative(eventType, arg1, arg2);
+  /* JNI */
+  @SuppressWarnings("unused") /* Used from JNI */
+  private long mInstance = 0;
+  private synchronized void dispatchEventFromNative(int eventType, long arg1, long arg2, float argf1) {
+    if (isReleased())
+      return;
+    final T event = onEventNative(eventType, arg1, arg2, argf1);
 
     class EventRunnable implements Runnable {
-
       private final VLCEvent.Listener<T> listener;
       private final T event;
 
@@ -122,25 +150,27 @@ import java.lang.ref.WeakReference;
         this.listener = listener;
         this.event = event;
       }
-
-      @Override public void run() {
+      @Override
+      public void run() {
         listener.onEvent(event);
       }
     }
 
-    if (event != null && mEventListener != null && mHandler != null) mHandler.post(new EventRunnable(mEventListener, event));
+    if (event != null && mEventListener != null && mHandler != null)
+      mHandler.post(new EventRunnable(mEventListener, event));
   }
-
   private native void nativeDetachEvents();
 
   /* used only before API 7: substitute for NewWeakGlobalRef */
-  @SuppressWarnings("unused") /* Used from JNI */ private Object getWeakReference() {
+  @SuppressWarnings("unused") /* Used from JNI */
+  private Object getWeakReference() {
     return new WeakReference<VLCObject>(this);
   }
-
-  @SuppressWarnings("unchecked,unused") /* Used from JNI */ private static void dispatchEventFromWeakNative(Object weak, int eventType, long arg1,
-      float arg2) {
-    VLCObject obj = ((WeakReference<VLCObject>) weak).get();
-    if (obj != null) obj.dispatchEventFromNative(eventType, arg1, arg2);
+  @SuppressWarnings("unchecked,unused") /* Used from JNI */
+  private static void dispatchEventFromWeakNative(Object weak, int eventType, long arg1, long arg2,
+          float argf1) {
+    VLCObject obj = ((WeakReference<VLCObject>)weak).get();
+    if (obj != null)
+      obj.dispatchEventFromNative(eventType, arg1, arg2, argf1);
   }
 }

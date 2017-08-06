@@ -29,12 +29,14 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.TextureView;
 
-@SuppressWarnings("unused") public interface IVLCVout {
-
-  interface Callback {
-
+@SuppressWarnings("unused")
+public interface IVLCVout {
+  interface OnNewVideoLayoutListener {
     /**
-     * This callback is called when the native vout call request a new Layout.
+     * This listener is called when the "android-display" "vout display" module request a new
+     * video layout. The implementation should take care of changing the surface
+     * LayoutsParams accordingly. If width and height are 0, LayoutParams should be reset to the
+     * initial state (MATCH_PARENT).
      *
      * @param vlcVout vlcVout
      * @param width Frame width
@@ -44,35 +46,39 @@ import android.view.TextureView;
      * @param sarNum Surface aspect ratio numerator
      * @param sarDen Surface aspect ratio denominator
      */
-    @MainThread void onNewLayout(IVLCVout vlcVout, int width, int height, int visibleWidth, int visibleHeight, int sarNum, int sarDen);
+    @MainThread
+    void onNewVideoLayout(IVLCVout vlcVout, int width, int height,
+            int visibleWidth, int visibleHeight, int sarNum, int sarDen);
+  }
 
+  interface Callback {
     /**
      * This callback is called when surfaces are created.
      */
-    @MainThread void onSurfacesCreated(IVLCVout vlcVout);
+    @MainThread
+    void onSurfacesCreated(IVLCVout vlcVout);
 
     /**
      * This callback is called when surfaces are destroyed.
      */
-    @MainThread void onSurfacesDestroyed(IVLCVout vlcVout);
-
-    /**
-     * TODO: temporary method, will be removed when VLC can handle decoder fallback
-     */
-    @MainThread void onHardwareAccelerationError(IVLCVout vlcVout);
+    @MainThread
+    void onSurfacesDestroyed(IVLCVout vlcVout);
   }
 
   /**
    * Set a surfaceView used for video out.
    * @see #attachViews()
    */
-  @MainThread void setVideoView(SurfaceView videoSurfaceView);
+  @MainThread
+  void setVideoView(SurfaceView videoSurfaceView);
 
   /**
    * Set a TextureView used for video out.
    * @see #attachViews()
    */
-  @MainThread @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH) void setVideoView(TextureView videoTextureView);
+  @MainThread
+  @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+  void setVideoView(TextureView videoTextureView);
 
   /**
    * Set a surface used for video out.
@@ -81,26 +87,32 @@ import android.view.TextureView;
    * and to get notified when surface is destroyed.
    * @see #attachViews()
    */
-  @MainThread void setVideoSurface(Surface videoSurface, SurfaceHolder surfaceHolder);
+  @MainThread
+  void setVideoSurface(Surface videoSurface, SurfaceHolder surfaceHolder);
 
   /**
    * Set a SurfaceTexture used for video out.
    * @param videoSurfaceTexture this surface must be valid and attached.
    * @see #attachViews()
    */
-  @MainThread @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH) void setVideoSurface(SurfaceTexture videoSurfaceTexture);
+  @MainThread
+  @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+  void setVideoSurface(SurfaceTexture videoSurfaceTexture);
 
   /**
    * Set a surfaceView used for subtitles out.
    * @see #attachViews()
    */
-  @MainThread void setSubtitlesView(SurfaceView subtitlesSurfaceView);
+  @MainThread
+  void setSubtitlesView(SurfaceView subtitlesSurfaceView);
 
   /**
    * Set a TextureView used for subtitles out.
    * @see #attachViews()
    */
-  @MainThread @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH) void setSubtitlesView(TextureView subtitlesTextureView);
+  @MainThread
+  @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+  void setSubtitlesView(TextureView subtitlesTextureView);
 
   /**
    * Set a surface used for subtitles out.
@@ -109,17 +121,32 @@ import android.view.TextureView;
    * and to get notified when surface is destroyed.
    * @see #attachViews()
    */
-  @MainThread void setSubtitlesSurface(Surface subtitlesSurface, SurfaceHolder surfaceHolder);
+  @MainThread
+  void setSubtitlesSurface(Surface subtitlesSurface, SurfaceHolder surfaceHolder);
 
   /**
    * Set a SurfaceTexture used for subtitles out.
    * @param subtitlesSurfaceTexture this surface must be valid and attached.
    * @see #attachViews()
    */
-  @MainThread @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH) void setSubtitlesSurface(SurfaceTexture subtitlesSurfaceTexture);
+  @MainThread
+  @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+  void setSubtitlesSurface(SurfaceTexture subtitlesSurfaceTexture);
 
   /**
-   * Attach views previously set by setVideoView, setSubtitlesView, setVideoSurface, setSubtitleSurface
+   * Attach views with an OnNewVideoLayoutListener
+   *
+   * This must be called afters views are set and before the MediaPlayer is first started.
+   *
+   * If onNewVideoLayoutListener is not null, the caller will handle the video layout that is
+   * needed by the "android-display" "vout display" module. Even if that case, the OpenGL ES2
+   * could still be used.
+   *
+   * If onNewVideoLayoutListener is null, the caller won't handle the video layout that is
+   * needed by the "android-display" "vout display" module. Therefore, only the OpenGL ES2
+   * "vout display" module will be used (for hardware and software decoding).
+   *
+   * @see OnNewVideoLayoutListener
    * @see #setVideoView(SurfaceView)
    * @see #setVideoView(TextureView)
    * @see #setVideoSurface(Surface, SurfaceHolder)
@@ -127,28 +154,42 @@ import android.view.TextureView;
    * @see #setSubtitlesView(TextureView)
    * @see #setSubtitlesSurface(Surface, SurfaceHolder)
    */
-  @MainThread void attachViews();
+  @MainThread
+  void attachViews(OnNewVideoLayoutListener onNewVideoLayoutListener);
+
+  /**
+   * Attach views without an OnNewVideoLayoutListener
+   *
+   * @see #attachViews(OnNewVideoLayoutListener)
+   */
+  @MainThread
+  void attachViews();
 
   /**
    * Detach views previously attached.
    * This will be called automatically when surfaces are destroyed.
    */
-  @MainThread void detachViews();
+  @MainThread
+  void detachViews();
 
   /**
    * Return true if views are attached. If surfaces were destroyed, this will return false.
    */
-  @MainThread boolean areViewsAttached();
+  @MainThread
+  boolean areViewsAttached();
 
   /**
-   * Add a callback to receive {@link Callback#onNewLayout} events.
+   * Add a callback to receive {@link Callback#onSurfacesCreated} and
+   * {@link Callback#onSurfacesDestroyed(IVLCVout)} events.
    */
-  @MainThread void addCallback(Callback callback);
+  @MainThread
+  void addCallback(Callback callback);
 
   /**
    * Remove a callback.
    */
-  @MainThread void removeCallback(Callback callback);
+  @MainThread
+  void removeCallback(Callback callback);
 
   /**
    * Send a mouse event to the native vout.
@@ -157,12 +198,14 @@ import android.view.TextureView;
    * @param x x coordinate.
    * @param y y coordinate.
    */
-  @MainThread void sendMouseEvent(int action, int button, int x, int y);
+  @MainThread
+  void sendMouseEvent(int action, int button, int x, int y);
 
   /**
    * Send the the window size to the native vout.
    * @param width width of the window.
    * @param height height of the window.
    */
-  @MainThread void setWindowSize(int width, int height);
+  @MainThread
+  void setWindowSize(int width, int height);
 }

@@ -23,18 +23,22 @@ package org.videolan.libvlc;
 import android.content.Context;
 import android.os.Build;
 import android.util.Log;
+
+import org.videolan.libvlc.util.AndroidUtil;
 import org.videolan.libvlc.util.HWDecoderUtil;
 
 import java.util.ArrayList;
 
-@SuppressWarnings("unused, JniMissingFunction") public class LibVLC extends VLCObject<LibVLC.Event> {
-
+@SuppressWarnings("unused, JniMissingFunction")
+public class LibVLC extends VLCObject<LibVLC.Event> {
   private static final String TAG = "VLC/LibVLC";
+  final Context mAppContext;
 
-  /** Native crash handler */
-  private static OnNativeCrashListener sOnNativeCrashListener;
-
-  private static boolean sLoaded = false;
+  public static class Event extends VLCEvent {
+    protected Event(int type) {
+      super(type);
+    }
+  }
 
   /**
    * Create a LibVLC withs options
@@ -42,33 +46,48 @@ import java.util.ArrayList;
    * @param options
    */
   public LibVLC(Context context, ArrayList<String> options) {
+    mAppContext = context.getApplicationContext();
     loadLibraries();
 
+    if (options == null)
+      options = new ArrayList<String>();
     boolean setAout = true, setChroma = true;
     // check if aout/vout options are already set
-    if (options != null) {
-      for (String option : options) {
-        if (option.startsWith("--aout=")) setAout = false;
-        if (option.startsWith("--androidwindow-chroma")) setChroma = false;
-        if (!setAout && !setChroma) break;
-      }
+    for (String option : options) {
+      if (option.startsWith("--aout="))
+        setAout = false;
+      if (option.startsWith("--android-display-chroma"))
+        setChroma = false;
+      if (!setAout && !setChroma)
+        break;
     }
 
     // set aout/vout options if they are not set
     if (setAout || setChroma) {
-      if (options == null) options = new ArrayList<String>();
       if (setAout) {
         final HWDecoderUtil.AudioOutput hwAout = HWDecoderUtil.getAudioOutputFromDevice();
-        if (hwAout == HWDecoderUtil.AudioOutput.OPENSLES) {
+        if (hwAout == HWDecoderUtil.AudioOutput.OPENSLES)
           options.add("--aout=opensles");
-        } else {
+        else
           options.add("--aout=android_audiotrack");
-        }
       }
       if (setChroma) {
-        options.add("--androidwindow-chroma");
-        options.add("RV32");
+        options.add("--android-display-chroma");
+        options.add("RV16");
       }
+    }
+
+        /* XXX: HACK to remove when we drop 2.3 support: force android_display vout */
+    if (!AndroidUtil.isHoneycombOrLater) {
+      boolean setVout = true;
+      for (String option : options) {
+        if (option.startsWith("--vout")) {
+          setVout = false;
+          break;
+        }
+      }
+      if (setVout)
+        options.add("--vout=android_display,none");
     }
 
     nativeNew(options.toArray(new String[options.size()]), context.getDir("vlc", Context.MODE_PRIVATE).getAbsolutePath());
@@ -79,13 +98,6 @@ import java.util.ArrayList;
    */
   public LibVLC(Context context) {
     this(context, null);
-  }
-
-  public static class Event extends VLCEvent {
-
-    protected Event(int type) {
-      super(type);
-    }
   }
 
   /**
@@ -106,25 +118,14 @@ import java.util.ArrayList;
    */
   public native String changeset();
 
-  @Override protected Event onEventNative(int eventType, long arg1, float arg2) {
+  @Override
+  protected Event onEventNative(int eventType, long arg1, long arg2, float argf1) {
     return null;
   }
 
-  @Override protected void onReleaseNative() {
+  @Override
+  protected void onReleaseNative() {
     nativeRelease();
-  }
-
-  public interface OnNativeCrashListener {
-
-    void onNativeCrash();
-  }
-
-  public static void setOnNativeCrashListener(OnNativeCrashListener l) {
-    sOnNativeCrashListener = l;
-  }
-
-  private static void onNativeCrash() {
-    if (sOnNativeCrashListener != null) sOnNativeCrashListener.onNativeCrash();
   }
 
   /**
@@ -134,57 +135,56 @@ import java.util.ArrayList;
    * @param name human-readable application name, e.g. "FooBar player 1.2.3"
    * @param http HTTP User Agent, e.g. "FooBar/1.2.3 Python/2.6.0"
    */
-  public void setUserAgent(String name, String http) {
+  public void setUserAgent(String name, String http){
     nativeSetUserAgent(name, http);
   }
 
   /* JNI */
   private native void nativeNew(String[] options, String homePath);
-
   private native void nativeRelease();
-
   private native void nativeSetUserAgent(String name, String http);
 
-  static synchronized void loadLibraries() {
-    if (sLoaded) return;
+  private static boolean sLoaded = false;
+
+  public static synchronized void loadLibraries() {
+    if (sLoaded)
+      return;
     sLoaded = true;
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD_MR1) {
+    System.loadLibrary("c++_shared");
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD_MR1
+            && Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
       try {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.HONEYCOMB_MR1) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.HONEYCOMB_MR1)
           System.loadLibrary("anw.10");
-        } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.HONEYCOMB_MR2) {
+        else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.HONEYCOMB_MR2)
           System.loadLibrary("anw.13");
-        } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+        else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1)
           System.loadLibrary("anw.14");
-        } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT_WATCH) {
+        else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT_WATCH)
           System.loadLibrary("anw.18");
-        } else {
+        else
           System.loadLibrary("anw.21");
-        }
       } catch (Throwable t) {
         Log.d(TAG, "anw library not loaded");
       }
 
       try {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1)
           System.loadLibrary("iomx.10");
-        } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.HONEYCOMB_MR2) {
+        else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.HONEYCOMB_MR2)
           System.loadLibrary("iomx.13");
-        } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+        else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1)
           System.loadLibrary("iomx.14");
-        } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+        else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR2)
           System.loadLibrary("iomx.18");
-        } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) System.loadLibrary("iomx.19");
+        else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT)
+          System.loadLibrary("iomx.19");
       } catch (Throwable t) {
         // No need to warn if it isn't found, when we intentionally don't build these except for debug
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) Log.w(TAG, "Unable to load the iomx library: " + t);
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
+          Log.w(TAG, "Unable to load the iomx library: " + t);
       }
-    }
-
-    try {
-      System.loadLibrary("compat.7");
-    } catch (Throwable ignored) {
     }
 
     try {

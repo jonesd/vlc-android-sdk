@@ -39,7 +39,7 @@ task vlcAndroidClone {
     description = 'Clone VLC Android source code'
     doLast {
       def repo = Grgit.clone(uri: VLC_ANDROID_SCM, dir: project.ext.vlcAndroidSource)
-      repo.checkout branch: "tags/${VERSION_NAME}"
+      repo.checkout branch: "tags/${VLC_ANDROID_VERSION}"
     }
     onlyIf { !project.ext.vlcAndroidSource.exists() }
 }

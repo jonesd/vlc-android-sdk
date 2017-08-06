@@ -28,6 +28,7 @@ import android.media.MediaFormat;
 import android.media.TimedText;
 import android.net.Uri;
 import android.os.Parcel;
+import android.os.Parcelable;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import java.io.FileDescriptor;
@@ -36,8 +37,8 @@ import java.util.Map;
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
 
-public class MediaPlayer {
-
+public class MediaPlayer
+{
   public static final int MEDIA_ERROR_UNKNOWN = 1;
   public static final int MEDIA_ERROR_SERVER_DIED = 100;
   public static final int MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK = 200;
@@ -62,12 +63,9 @@ public class MediaPlayer {
 
   public static final int VIDEO_SCALING_MODE_SCALE_TO_FIT = 1;
   public static final int VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING = 2;
-  public static final String MEDIA_MIMETYPE_TEXT_SUBRIP = "application/x-subrip";
 
   private Media mCurrentMedia = null;
-
   private final LibVLC mLibVLC;
-
   private org.videolan.libvlc.MediaPlayer mMediaPlayer;
 
   public MediaPlayer() {
@@ -76,14 +74,15 @@ public class MediaPlayer {
   }
 
   public static MediaPlayer create(Context context, Uri uri) {
-    return create(context, uri, null);
+    return create (context, uri, null);
   }
 
   public static MediaPlayer create(Context context, Uri uri, SurfaceHolder holder) {
     return create(context, uri, holder, null, 0);
   }
 
-  public static MediaPlayer create(Context context, Uri uri, SurfaceHolder holder, AudioAttributes audioAttributes, int audioSessionId) {
+  public static MediaPlayer create(Context context, Uri uri, SurfaceHolder holder,
+          AudioAttributes audioAttributes, int audioSessionId) {
     MediaPlayer player = new MediaPlayer();
     //player.setDataSource(context, uri); This throws exception, but not this create()
     return player;
@@ -93,33 +92,38 @@ public class MediaPlayer {
     return create(context, resid, null, 0);
   }
 
-  public static MediaPlayer create(Context context, int resid, AudioAttributes audioAttributes, int audioSessionId) {
+  public static MediaPlayer create(Context context, int resid,
+          AudioAttributes audioAttributes, int audioSessionId) {
     return null;
   }
 
-  public void setDataSource(Context context, Uri uri) throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
+  public void setDataSource(Context context, Uri uri)
+          throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
     setDataSource(context, uri, null);
   }
 
   // FIXME, this is INCORRECT, @headers are ignored
   public void setDataSource(Context context, Uri uri, Map<String, String> headers)
-      throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
+          throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
     mCurrentMedia = new Media(mLibVLC, uri);
     mMediaPlayer.setMedia(mCurrentMedia);
   }
 
-  public void setDataSource(String path) throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
+  public void setDataSource(String path)
+          throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
     mCurrentMedia = new Media(mLibVLC, path);
     mMediaPlayer.setMedia(mCurrentMedia);
   }
 
-  public void setDataSource(FileDescriptor fd) throws IOException, IllegalArgumentException, IllegalStateException {
+  public void setDataSource(FileDescriptor fd)
+          throws IOException, IllegalArgumentException, IllegalStateException {
     mCurrentMedia = new Media(mLibVLC, fd);
     mMediaPlayer.setMedia(mCurrentMedia);
   }
 
   // FIXME, this is INCORRECT, @offset and @length are ignored
-  public void setDataSource(FileDescriptor fd, long offset, long length) throws IOException, IllegalArgumentException, IllegalStateException {
+  public void setDataSource(FileDescriptor fd, long offset, long length)
+          throws IOException, IllegalArgumentException, IllegalStateException {
     setDataSource(fd);
   }
 
@@ -177,12 +181,12 @@ public class MediaPlayer {
 
   // This is of course, less precise than VLC
   public int getCurrentPosition() {
-    return (int) mMediaPlayer.getTime();
+    return (int)mMediaPlayer.getTime();
   }
 
   // This is of course, less precise than VLC
   public int getDuration() {
-    return (int) mMediaPlayer.getLength();
+    return (int)mMediaPlayer.getLength();
   }
 
   public void setNextMediaPlayer(MediaPlayer next) {
@@ -201,22 +205,22 @@ public class MediaPlayer {
   public void setAudioAttributes(AudioAttributes attributes) throws IllegalArgumentException {
   }
 
+  public void setLooping(boolean looping) {
+  }
+
   public boolean isLooping() {
     return false;
   }
 
-  public void setLooping(boolean looping) {
+  public void setVolume(float leftVolume, float rightVolume) {
+    mMediaPlayer.setVolume( (int)((leftVolume + rightVolume) * 100/2));
   }
 
-  public void setVolume(float leftVolume, float rightVolume) {
-    mMediaPlayer.setVolume((int) ((leftVolume + rightVolume) * 100 / 2));
+  public void setAudioSessionId(int sessionId)  throws IllegalArgumentException, IllegalStateException {
   }
 
   public int getAudioSessionId() {
     return 0;
-  }
-
-  public void setAudioSessionId(int sessionId) throws IllegalArgumentException, IllegalStateException {
   }
 
   public void attachAuxEffect(int effectId) {
@@ -225,7 +229,7 @@ public class MediaPlayer {
   public void setAuxEffectSendLevel(float level) {
   }
 
-  static public class TrackInfo {
+  static public class TrackInfo implements Parcelable {
 
     public static final int MEDIA_TRACK_TYPE_UNKNOWN = 0;
     public static final int MEDIA_TRACK_TYPE_VIDEO = 1;
@@ -241,14 +245,24 @@ public class MediaPlayer {
     }
 
     public String getLanguage() {
-      return "und";
+      return  "und";
     }
 
     public MediaFormat getFormat() {
       return null;
     }
 
-    @Override public String toString() {
+    @Override
+    public int describeContents() {
+      return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+    }
+
+    @Override
+    public String toString() {
       return "";
     }
   }
@@ -259,6 +273,8 @@ public class MediaPlayer {
     return trackInfo;
   }
 
+  public static final String MEDIA_MIMETYPE_TEXT_SUBRIP = "application/x-subrip";
+
   public void addTimedTextSource(String path, String mimeType) {
     mMediaPlayer.addSlave(Media.Slave.Type.Subtitle, path, false);
   }
@@ -267,10 +283,12 @@ public class MediaPlayer {
     mMediaPlayer.addSlave(Media.Slave.Type.Subtitle, uri, false);
   }
 
-  public void addTimedTextSource(FileDescriptor fd, String mimeType) throws IllegalArgumentException, IllegalStateException {
+  public void addTimedTextSource(FileDescriptor fd, String mimeType)
+          throws IllegalArgumentException, IllegalStateException {
   }
 
-  public void addTimedTextSource(FileDescriptor fd, long offset, long length, String mime) throws IllegalArgumentException, IllegalStateException {
+  public void addTimedTextSource(FileDescriptor fd, long offset, long length, String mime)
+          throws IllegalArgumentException, IllegalStateException {
   }
 
   public int getSelectedTrack(int trackType) throws IllegalStateException {
@@ -283,70 +301,70 @@ public class MediaPlayer {
   public void deselectTrack(int index) throws IllegalStateException {
   }
 
-  public interface OnPreparedListener {
+  @Override
+  protected void finalize() {}
 
+  public interface OnPreparedListener
+  {
     void onPrepared(MediaPlayer mp);
-  }  @Override protected void finalize() {
   }
 
   public void setOnPreparedListener(OnPreparedListener listener) {
   }
 
-  public interface OnCompletionListener {
-
+  public interface OnCompletionListener
+  {
     void onCompletion(MediaPlayer mp);
   }
 
   public void setOnCompletionListener(OnCompletionListener listener) {
   }
 
-  public interface OnBufferingUpdateListener {
-
+  public interface OnBufferingUpdateListener
+  {
     void onBufferingUpdate(MediaPlayer mp, int percent);
   }
 
   public void setOnBufferingUpdateListener(OnBufferingUpdateListener listener) {
   }
 
-  public interface OnSeekCompleteListener {
-
-    void onSeekComplete(MediaPlayer mp);
+  public interface OnSeekCompleteListener
+  {
+    public void onSeekComplete(MediaPlayer mp);
   }
 
   public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
   }
 
-  public interface OnVideoSizeChangedListener {
-
-    void onVideoSizeChanged(MediaPlayer mp, int width, int height);
+  public interface OnVideoSizeChangedListener
+  {
+    public void onVideoSizeChanged(MediaPlayer mp, int width, int height);
   }
 
   public void setOnVideoSizeChangedListener(OnVideoSizeChangedListener listener) {
   }
 
-  public interface OnTimedTextListener {
-
-    void onTimedText(MediaPlayer mp, TimedText text);
+  public interface OnTimedTextListener
+  {
+    public void onTimedText(MediaPlayer mp, TimedText text);
   }
 
   public void setOnTimedTextListener(OnTimedTextListener listener) {
   }
 
-  public interface OnErrorListener {
-
+  public interface OnErrorListener
+  {
     boolean onError(MediaPlayer mp, int what, int extra);
   }
 
   public void setOnErrorListener(OnErrorListener listener) {
   }
 
-  public interface OnInfoListener {
-
+  public interface OnInfoListener
+  {
     boolean onInfo(MediaPlayer mp, int what, int extra);
   }
 
   public void setOnInfoListener(OnInfoListener listener) {
   }
-
-
 }

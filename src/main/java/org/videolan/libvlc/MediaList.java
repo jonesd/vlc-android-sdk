@@ -20,6 +20,7 @@
 
 package org.videolan.libvlc;
 
+import android.os.Handler;
 import android.util.SparseArray;
 
 @SuppressWarnings("unused, JniMissingFunction")
@@ -50,7 +51,7 @@ public class MediaList extends VLCObject<MediaList.Event> {
         }
     }
 
-    public interface EventListener extends VLCEvent.Listener<Event> {}
+    public interface EventListener extends VLCEvent.Listener<MediaList.Event> {}
 
     private int mCount = 0;
     private final SparseArray<Media> mMediaArray = new SparseArray<Media>();
@@ -69,6 +70,7 @@ public class MediaList extends VLCObject<MediaList.Event> {
      * @param libVLC a valid libVLC
      */
     public MediaList(LibVLC libVLC) {
+        super(libVLC);
         nativeNewFromLibVlc(libVLC);
         init();
     }
@@ -78,6 +80,7 @@ public class MediaList extends VLCObject<MediaList.Event> {
      * @param md Should not be released
      */
     protected MediaList(MediaDiscoverer md) {
+        super(md);
         nativeNewFromMediaDiscoverer(md);
         init();
     }
@@ -87,6 +90,7 @@ public class MediaList extends VLCObject<MediaList.Event> {
      * @param m Should not be released
      */
     protected MediaList(Media m) {
+        super(m);
         nativeNewFromMedia(m);
         init();
     }
@@ -112,12 +116,12 @@ public class MediaList extends VLCObject<MediaList.Event> {
         return media;
     }
 
-    public void setEventListener(EventListener listener) {
-        super.setEventListener(listener);
+    public void setEventListener(EventListener listener, Handler handler) {
+        super.setEventListener(listener, handler);
     }
 
     @Override
-    protected synchronized Event onEventNative(int eventType, long arg1, float arg2) {
+    protected synchronized Event onEventNative(int eventType, long arg1, long arg2, float  argf1) {
         if (mLocked)
             throw new IllegalStateException("already locked from event callback");
         mLocked = true;
@@ -125,23 +129,23 @@ public class MediaList extends VLCObject<MediaList.Event> {
         int index;
 
         switch (eventType) {
-        case Event.ItemAdded:
-            index = (int) arg1;
-            if (index != -1) {
-                final Media media = insertMediaFromEvent(index);
-                event = new Event(eventType, media, index);
-            }
-            break;
-        case Event.ItemDeleted:
-            index = (int) arg1;
-            if (index != -1) {
-                final Media media = removeMediaFromEvent(index);
-                event = new Event(eventType, media, index);
-            }
-            break;
-        case Event.EndReached:
-            event = new Event(eventType, null, -1);
-            break;
+            case Event.ItemAdded:
+                index = (int) arg1;
+                if (index != -1) {
+                    final Media media = insertMediaFromEvent(index);
+                    event = new Event(eventType, media, index);
+                }
+                break;
+            case Event.ItemDeleted:
+                index = (int) arg1;
+                if (index != -1) {
+                    final Media media = removeMediaFromEvent(index);
+                    event = new Event(eventType, media, index);
+                }
+                break;
+            case Event.EndReached:
+                event = new Event(eventType, null, -1);
+                break;
         }
         mLocked = false;
         return event;

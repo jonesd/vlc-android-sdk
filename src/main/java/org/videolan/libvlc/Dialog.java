@@ -24,32 +24,20 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.MainThread;
 
-@SuppressWarnings("unused, JniMissingFunction") public abstract class Dialog {
-
-  public static final int TYPE_ERROR = 0;
-  public static final int TYPE_LOGIN = 1;
-  public static final int TYPE_QUESTION = 2;
-  public static final int TYPE_PROGRESS = 3;
-
-  private static Handler sHandler = null;
-  private static Callbacks sCallbacks = null;
-  private final String mTitle;
-  private Object mContext;
-
-  protected final int mType;
-  protected String mText;
+@SuppressWarnings("unused, JniMissingFunction")
+public abstract class Dialog {
 
   /**
    * Dialog Callback, see {@link Dialog#setCallbacks(LibVLC, Callbacks)}
    */
   public interface Callbacks {
-
     /**
      * Call when an error message need to be displayed
      *
      * @param dialog error dialog to be displayed
      */
-    @MainThread void onDisplay(ErrorMessage dialog);
+    @MainThread
+    void onDisplay(ErrorMessage dialog);
 
     /**
      * Called when a login dialog need to be displayed
@@ -59,7 +47,8 @@ import android.support.annotation.MainThread;
      *
      * @param dialog login dialog to be displayed
      */
-    @MainThread void onDisplay(LoginDialog dialog);
+    @MainThread
+    void onDisplay(LoginDialog dialog);
 
     /**
      * Called when a question dialog need to be displayed
@@ -69,7 +58,8 @@ import android.support.annotation.MainThread;
      *
      * @param dialog question dialog to be displayed
      */
-    @MainThread void onDisplay(QuestionDialog dialog);
+    @MainThread
+    void onDisplay(QuestionDialog dialog);
 
     /**
      * Called when a progress dialog need to be displayed
@@ -78,14 +68,16 @@ import android.support.annotation.MainThread;
      *
      * @param dialog question dialog to be displayed
      */
-    @MainThread void onDisplay(ProgressDialog dialog);
+    @MainThread
+    void onDisplay(ProgressDialog dialog);
 
     /**
      * Called when a previously displayed dialog need to be canceled
      *
      * @param dialog dialog to be canceled
      */
-    @MainThread void onCanceled(Dialog dialog);
+    @MainThread
+    void onCanceled(Dialog dialog);
 
     /**
      * Called when a progress dialog needs to be updated
@@ -95,8 +87,22 @@ import android.support.annotation.MainThread;
      *
      * @param dialog dialog to be updated
      */
-    @MainThread void onProgressUpdate(ProgressDialog dialog);
+    @MainThread
+    void onProgressUpdate(ProgressDialog dialog);
   }
+
+  public static final int TYPE_ERROR = 0;
+  public static final int TYPE_LOGIN = 1;
+  public static final int TYPE_QUESTION = 2;
+  public static final int TYPE_PROGRESS = 3;
+
+  protected final int mType;
+  private final String mTitle;
+  protected String mText;
+  private Object mContext;
+
+  private static Handler sHandler = null;
+  private static Callbacks sCallbacks = null;
 
   protected Dialog(int type, String title, String text) {
     mType = type;
@@ -111,42 +117,48 @@ import android.support.annotation.MainThread;
    * {@link Dialog#TYPE_PROGRESS}
    * @return
    */
-  @MainThread public int getType() {
+  @MainThread
+  public int getType() {
     return mType;
   }
 
   /**
    * Get the title of the dialog
    */
-  @MainThread public String getTitle() {
+  @MainThread
+  public String getTitle() {
     return mTitle;
   }
 
   /**
    * Get the text of the dialog
    */
-  @MainThread public String getText() {
+  @MainThread
+  public String getText() {
     return mText;
-  }
-
-  /**
-   * Return the object associated with the dialog
-   */
-  @MainThread public Object getContext() {
-    return mContext;
   }
 
   /**
    * Associate an object with the dialog
    */
-  @MainThread public void setContext(Object context) {
+  @MainThread
+  public void setContext(Object context) {
     mContext = context;
+  }
+
+  /**
+   * Return the object associated with the dialog
+   */
+  @MainThread
+  public Object getContext() {
+    return mContext;
   }
 
   /**
    * Dismiss the dialog
    */
-  @MainThread public void dismiss() {
+  @MainThread
+  public void dismiss() {
   }
 
   /**
@@ -155,8 +167,10 @@ import android.support.annotation.MainThread;
    * @param libVLC valid LibVLC object
    * @param callbacks dialog callbacks or null to unregister
    */
-  @MainThread public static void setCallbacks(LibVLC libVLC, Callbacks callbacks) {
-    if (callbacks != null && sHandler == null) sHandler = new Handler(Looper.getMainLooper());
+  @MainThread
+  public static void setCallbacks(LibVLC libVLC, Callbacks callbacks) {
+    if (callbacks != null && sHandler == null)
+      sHandler = new Handler(Looper.getMainLooper());
     sCallbacks = callbacks;
     nativeSetCallbacks(libVLC, callbacks != null);
   }
@@ -174,20 +188,20 @@ import android.support.annotation.MainThread;
   }
 
   protected static abstract class IdDialog extends Dialog {
+    protected long mId;
 
     protected IdDialog(long id, int type, String title, String text) {
       super(type, title, text);
       mId = id;
     }
-    protected long mId;
 
-    @MainThread public void dismiss() {
+    @MainThread
+    public void dismiss() {
       if (mId != 0) {
         nativeDismiss(mId);
         mId = 0;
       }
     }
-
     private native void nativeDismiss(long id);
   }
 
@@ -197,7 +211,6 @@ import android.support.annotation.MainThread;
    * Used to ask credentials to the user
    */
   public static class LoginDialog extends IdDialog {
-
     private final String mDefaultUsername;
     private final boolean mAskStore;
 
@@ -210,7 +223,8 @@ import android.support.annotation.MainThread;
     /**
      * Get the default user name that should be pre-filled
      */
-    @MainThread public String getDefaultUsername() {
+    @MainThread
+    public String getDefaultUsername() {
       return mDefaultUsername;
     }
 
@@ -219,7 +233,8 @@ import android.support.annotation.MainThread;
      *
      * @return if true, add a checkbox that ask to the user if he wants to store the credentials
      */
-    @MainThread public boolean asksStore() {
+    @MainThread
+    public boolean asksStore() {
       return mAskStore;
     }
 
@@ -230,7 +245,8 @@ import android.support.annotation.MainThread;
      * @param password valid password (can be empty)
      * @param store if true, store the credentials
      */
-    @MainThread public void postLogin(String username, String password, boolean store) {
+    @MainThread
+    public void postLogin(String username, String password, boolean store) {
       if (mId != 0) {
         nativePostLogin(mId, username, password, store);
         mId = 0;
@@ -246,7 +262,6 @@ import android.support.annotation.MainThread;
    * Used to ask a blocking question
    */
   public static class QuestionDialog extends IdDialog {
-
     public static final int TYPE_NORMAL = 0;
     public static final int TYPE_WARNING = 1;
     public static final int TYPE_ERROR = 2;
@@ -256,7 +271,8 @@ import android.support.annotation.MainThread;
     private final String mAction1Text;
     private final String mAction2Text;
 
-    private QuestionDialog(long id, String title, String text, int type, String cancelText, String action1Text, String action2Text) {
+    private QuestionDialog(long id, String title, String text, int type, String cancelText,
+            String action1Text, String action2Text) {
       super(id, TYPE_QUESTION, title, text);
       mQuestionType = type;
       mCancelText = cancelText;
@@ -270,28 +286,32 @@ import android.support.annotation.MainThread;
      * See {@link QuestionDialog#TYPE_NORMAL}, {@link QuestionDialog#TYPE_WARNING} and
      * {@link QuestionDialog#TYPE_ERROR}
      */
-    @MainThread public int getQuestionType() {
+    @MainThread
+    public int getQuestionType() {
       return mQuestionType;
     }
 
     /**
      * Get the text of the cancel button
      */
-    @MainThread public String getCancelText() {
+    @MainThread
+    public String getCancelText() {
       return mCancelText;
     }
 
     /**
      * Get the text of the first button (optional, can be null)
      */
-    @MainThread public String getAction1Text() {
+    @MainThread
+    public String getAction1Text() {
       return mAction1Text;
     }
 
     /**
      * Get the text of the second button (optional, can be null)
      */
-    @MainThread public String getAction2Text() {
+    @MainThread
+    public String getAction2Text() {
       return mAction2Text;
     }
 
@@ -300,13 +320,13 @@ import android.support.annotation.MainThread;
      *
      * @param action 1 for first action, 2 for second action
      */
-    @MainThread public void postAction(int action) {
+    @MainThread
+    public void postAction(int action) {
       if (mId != 0) {
         nativePostAction(mId, action);
         mId = 0;
       }
     }
-
     private native void nativePostAction(long id, int action);
   }
 
@@ -316,12 +336,12 @@ import android.support.annotation.MainThread;
    * Used to display a progress dialog
    */
   public static class ProgressDialog extends IdDialog {
-
     private final boolean mIndeterminate;
     private float mPosition;
     private final String mCancelText;
 
-    private ProgressDialog(long id, String title, String text, boolean indeterminate, float position, String cancelText) {
+    private ProgressDialog(long id, String title, String text, boolean indeterminate,
+            float position, String cancelText) {
       super(id, TYPE_PROGRESS, title, text);
       mIndeterminate = indeterminate;
       mPosition = position;
@@ -331,14 +351,16 @@ import android.support.annotation.MainThread;
     /**
      * Return true if the progress dialog is inderterminate
      */
-    @MainThread public boolean isIndeterminate() {
+    @MainThread
+    public boolean isIndeterminate() {
       return mIndeterminate;
     }
 
     /**
      * Return true if the progress dialog is cancelable
      */
-    @MainThread public boolean isCancelable() {
+    @MainThread
+    public boolean isCancelable() {
       return mCancelText != null;
     }
 
@@ -346,14 +368,16 @@ import android.support.annotation.MainThread;
      * Get the position of the progress dialog
      * @return position between 0.0 and 1.0
      */
-    @MainThread public float getPosition() {
+    @MainThread
+    public float getPosition() {
       return mPosition;
     }
 
     /**
      * Get the text of the cancel button
      */
-    @MainThread public String getCancelText() {
+    @MainThread
+    public String getCancelText() {
       return mCancelText;
     }
 
@@ -364,65 +388,89 @@ import android.support.annotation.MainThread;
 
   }
 
-  @SuppressWarnings("unused") /* Used from JNI */ private static void displayErrorFromNative(String title, String text) {
+  @SuppressWarnings("unused") /* Used from JNI */
+  private static void displayErrorFromNative(String title, String text) {
     final ErrorMessage dialog = new ErrorMessage(title, text);
     sHandler.post(new Runnable() {
-      @Override public void run() {
-        if (sCallbacks != null) sCallbacks.onDisplay(dialog);
+      @Override
+      public void run() {
+        if (sCallbacks != null)
+          sCallbacks.onDisplay(dialog);
       }
     });
   }
 
-  @SuppressWarnings("unused") /* Used from JNI */ private static Dialog displayLoginFromNative(long id, String title, String text,
-      String defaultUsername, boolean askStore) {
+
+  @SuppressWarnings("unused") /* Used from JNI */
+  private static Dialog displayLoginFromNative(long id, String title, String text,
+          String defaultUsername, boolean askStore) {
     final LoginDialog dialog = new LoginDialog(id, title, text, defaultUsername, askStore);
     sHandler.post(new Runnable() {
-      @Override public void run() {
-        if (sCallbacks != null) sCallbacks.onDisplay(dialog);
+      @Override
+      public void run() {
+        if (sCallbacks != null)
+          sCallbacks.onDisplay(dialog);
       }
     });
     return dialog;
   }
 
-  @SuppressWarnings("unused") /* Used from JNI */ private static Dialog displayQuestionFromNative(long id, String title, String text, int type,
-      String cancelText, String action1Text, String action2Text) {
-    final QuestionDialog dialog = new QuestionDialog(id, title, text, type, cancelText, action1Text, action2Text);
+  @SuppressWarnings("unused") /* Used from JNI */
+  private static Dialog displayQuestionFromNative(long id, String title, String text,
+          int type, String cancelText,
+          String action1Text, String action2Text) {
+    final QuestionDialog dialog = new QuestionDialog(id, title, text, type, cancelText,
+            action1Text, action2Text);
     sHandler.post(new Runnable() {
-      @Override public void run() {
-        if (sCallbacks != null) sCallbacks.onDisplay(dialog);
+      @Override
+      public void run() {
+        if (sCallbacks != null)
+          sCallbacks.onDisplay(dialog);
       }
     });
     return dialog;
   }
 
-  @SuppressWarnings("unused") /* Used from JNI */ private static Dialog displayProgressFromNative(long id, String title, String text,
-      boolean indeterminate, float position, String cancelText) {
+  @SuppressWarnings("unused") /* Used from JNI */
+  private static Dialog displayProgressFromNative(long id, String title, String text,
+          boolean indeterminate,
+          float position, String cancelText) {
     final ProgressDialog dialog = new ProgressDialog(id, title, text, indeterminate, position, cancelText);
     sHandler.post(new Runnable() {
-      @Override public void run() {
-        if (sCallbacks != null) sCallbacks.onDisplay(dialog);
+      @Override
+      public void run() {
+        if (sCallbacks != null)
+          sCallbacks.onDisplay(dialog);
       }
     });
     return dialog;
   }
 
-  @SuppressWarnings("unused") /* Used from JNI */ private static void cancelFromNative(final Dialog dialog) {
+  @SuppressWarnings("unused") /* Used from JNI */
+  private static void cancelFromNative(final Dialog dialog) {
     sHandler.post(new Runnable() {
-      @Override public void run() {
-        if (dialog instanceof IdDialog) ((IdDialog) dialog).dismiss();
-        if (sCallbacks != null && dialog != null) sCallbacks.onCanceled(dialog);
+      @Override
+      public void run() {
+        if (dialog instanceof IdDialog)
+          ((IdDialog) dialog).dismiss();
+        if (sCallbacks != null && dialog != null)
+          sCallbacks.onCanceled(dialog);
       }
     });
   }
 
-  @SuppressWarnings("unused") /* Used from JNI */ private static void updateProgressFromNative(final Dialog dialog, final float position,
-      final String text) {
+  @SuppressWarnings("unused") /* Used from JNI */
+  private static void updateProgressFromNative(final Dialog dialog, final float position,
+          final String text) {
     sHandler.post(new Runnable() {
-      @Override public void run() {
-        if (dialog.getType() != TYPE_PROGRESS) throw new IllegalArgumentException("dialog is not a progress dialog");
+      @Override
+      public void run() {
+        if (dialog.getType() != TYPE_PROGRESS)
+          throw new IllegalArgumentException("dialog is not a progress dialog");
         final ProgressDialog progressDialog = (ProgressDialog) dialog;
         progressDialog.update(position, text);
-        if (sCallbacks != null) sCallbacks.onProgressUpdate(progressDialog);
+        if (sCallbacks != null)
+          sCallbacks.onProgressUpdate(progressDialog);
       }
     });
   }
