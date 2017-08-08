@@ -6,8 +6,8 @@ dependencies:
   pre:
     - mkdir $HOME/android-sdk
     - mkdir $HOME/android-ndk
-    - export ANDROID_HOME=/usr/local/android-sdk
-    - export ANDROID_NDK=/workspace/android-ndk
+    - export ANDROID_HOME=$HOME/android-sdk
+    - export ANDROID_NDK=$HOME/android-ndk
     - export ANDROID_SDK=$ANDROID_HOME
     - wget https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip
     - unzip -o sdk-tools-linux-3859397.zip -d $ANDROID_HOME/
@@ -24,7 +24,7 @@ dependencies:
     - cd vlc
     - git checkout bdb4031
     - cd ../..
-    - $ANDROID_SDK/tools/bin/sdkmanager "platforms;android-26" --channel=3
+    - $ANDROID_SDK/tools/bin/sdkmanager "platforms;android-26"
     - ./gradlew vlcBuild
 
 #    - if ! $(grep -q "Revision=41.0.0" $ANDROID_HOME/extras/android/m2repository/source.properties); then echo y | android update sdk --no-ui --all --filter "extra-android-m2repository"; fi
