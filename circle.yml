@@ -1,3 +1,4 @@
+version: 2
 jobs:
   build:
     docker:
@@ -10,9 +11,8 @@ machine:
 dependencies:
   pre:
     - mkdir $HOME/android-sdk
-    - mkdir $HOME/android-ndk
     - export ANDROID_HOME=$HOME/android-sdk
-    - export ANDROID_NDK=$HOME/android-ndk
+    - export ANDROID_NDK=$ANDROID_HOME/android-ndk-r14b
     - export ANDROID_SDK=$ANDROID_HOME
     - wget https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip
     - unzip -o sdk-tools-linux-3859397.zip -d $ANDROID_HOME/
