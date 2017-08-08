@@ -1,7 +1,5 @@
 #!/bin/bash
 
-echo pwd
-echo ls
 mkdir $HOME/android-sdk
 export ANDROID_HOME=$HOME/android-sdk
 export ANDROID_NDK=$ANDROID_HOME/android-ndk-r14b

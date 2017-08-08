@@ -7,6 +7,12 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Location
+          command: echo pwd
+      - run:
+          name: Location
+          command: echo ls
+      - run:
           name: Execute all
           command: ./config/run-tests.sh
 
