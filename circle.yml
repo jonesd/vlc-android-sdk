@@ -8,10 +8,10 @@ jobs:
       - checkout
       - run:
           name: Location
-          command: echo pwd
+          command: pwd
       - run:
           name: Location
-          command: echo ls
+          command: ls
       - run:
           name: Execute all
           command: ./config/run-tests.sh
