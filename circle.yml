@@ -3,6 +3,7 @@ jobs:
   build:
     docker:
       - image: buildpack-deps:zesty
+    working_directory: ~/vlc-android-sdk
     steps:
       - checkout
       - run:
