@@ -7,14 +7,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Location
-          command: pwd
-      - run:
-          name: Location
-          command: ls
-      - run:
           name: Execute all
-          command: ./config/run-tests.sh
+          command: ./config/circleci/run-tests.sh
 
 #machine:
 #  java:
