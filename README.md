@@ -10,7 +10,7 @@ Get it via JCenter
 
 Just add this dependency to your project and you're good to go:
 
-<pre>
+```
 buildscript {
   repositories {
     maven {
@@ -22,7 +22,7 @@ buildscript {
 dependencies {
   compile "com.butterproject:vlc-android-sdk:2.0.6"
 }
-</pre>
+```
 
 Current stable version is **2.0.6**. Although, there are newer versions of the **libVLC** library none of them has been officially pushed to the 
 main VLC Android application. So until this happens, it doesn't make sense to update this project.

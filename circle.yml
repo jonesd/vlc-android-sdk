@@ -4,8 +4,28 @@ machine:
 
 dependencies:
   pre:
-    - wget https://dl.google.com/android/repository/tools_r25.2.3-linux.zip
-    - unzip -o tools_r25.2.3-linux.zip -d /usr/local/android-sdk-linux/
+    - mkdir /usr/local/android-sdk
+    - mkdir /usr/local/android-ndk
+    - export ANDROID_HOME=/usr/local/android-sdk
+    - export ANDROID_NDK=/workspace/android-ndk
+    - export ANDROID_SDK=$ANDROID_HOME
+    - wget https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip
+    - unzip -o sdk-tools-linux-3859397.zip -d $ANDROID_HOME/
+    - wget https://dl.google.com/android/repository/android-ndk-r14b-linux-x86_64.zip
+    - unzip -o android-ndk-r14b-linux-x86_64.zip -d $ANDROID_NDK/
+    - mkdir "$ANDROID_SDK/licenses"
+    - echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > "$ANDROID_SDK/licenses/android-sdk-license"
+    - echo "84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_SDK/licenses/android-sdk-preview-license"
+    - git clone https://code.videolan.org/videolan/vlc-android.git vlc-android
+    - cd vlc-android
+    - git checkout 2.1.15
+    - git clone http://git.videolan.org/git/vlc.git vlc
+    - cd vlc
+    - git checkout bdb4031
+    - cd ../..
+    - $ANDROID_SDK/tools/bin/sdkmanager "platforms;android-26" --channel=3
+    - ./gradlew vlcBuild
+
 #    - if ! $(grep -q "Revision=41.0.0" $ANDROID_HOME/extras/android/m2repository/source.properties); then echo y | android update sdk --no-ui --all --filter "extra-android-m2repository"; fi
 #    - if ! $(grep -q "Revision=25.2.4" $ANDROID_HOME/tools/source.properties); then echo y | android update sdk --no-ui --all --filter "tools"; fi
 #    - if ! $(grep -q "Revision=25.0.2" $ANDROID_HOME/platform-tools/source.properties); then echo y | android update sdk --no-ui --all --filter "platform-tools"; fi
