@@ -1,5 +1,9 @@
 #!/bin/bash
 
+sudo apt-get update
+sudo apt-get install automake ant autopoint cmake build-essential libtool \
+     patch pkg-config protobuf-compiler ragel subversion unzip git \
+     openjdk-8-jre openjdk-8-jdk wget python
 mkdir $HOME/android-sdk
 export ANDROID_HOME=$HOME/android-sdk
 export ANDROID_NDK=$ANDROID_HOME/android-ndk-r14b
