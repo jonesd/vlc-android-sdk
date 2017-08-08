@@ -1,3 +1,8 @@
+jobs:
+  build:
+    docker:
+      - image: buildpack-deps:zesty
+
 machine:
   java:
     version: oraclejdk8
