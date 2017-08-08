@@ -25,6 +25,7 @@ git checkout bdb4031
 cd ../..
 $ANDROID_SDK/tools/bin/sdkmanager "platforms;android-26"
 $ANDROID_SDK/tools/bin/sdkmanager "platform-tools"
+$ANDROID_SDK/tools/bin/sdkmanager "build-tools;25.0.0"
 ./gradlew vlcBuild
 
 # if [ $CIRCLE_NODE_INDEX -eq 0 ]
