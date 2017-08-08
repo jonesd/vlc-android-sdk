@@ -6,8 +6,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Android sdk path
-          command: mkdir $HOME/android-sdk
+          name: Execute all
+          command: ./config/run-tests.sh
 
 #machine:
 #  java:
