@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: buildpack-deps:zesty
+      - image: blazsolar/vlc-android:zesty
     working_directory: ~/vlc-android-sdk
     steps:
       - run: echo 'export ANDROID_HOME=$HOME/android-sdk' >> $BASH_ENV
