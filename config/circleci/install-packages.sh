@@ -3,7 +3,7 @@
 sudo dpkg --add-architecture i386
 sudo apt-get update
 
-sudo apt-get install automake ant autopoint cmake build-essential libtool \
+sudo apt-get -y install automake ant autopoint cmake build-essential libtool \
      patch pkg-config protobuf-compiler ragel subversion unzip git \
     openjdk-8-jre openjdk-8-jdk wget python
 
