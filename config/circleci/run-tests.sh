@@ -2,4 +2,4 @@
 
 # ./gradlew vlcBuildX86
 cd vlc-android
-./compile.sh -a x86
+./compile.sh
