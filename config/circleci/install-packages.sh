@@ -11,6 +11,12 @@ dpkg --add-architecture i386
 apt-get update
 apt-get -y install zlib1g:i386 libstdc++6:i386 libc6:i386
 
+echo "VLC user"
+echo
+echo
+
 useradd -ms /bin/bash  vlc
 su vlc
 cd $HOME
+
+echo $HOME
