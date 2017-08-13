@@ -1,11 +1,15 @@
 #!/bin/bash
 
-#apt-get update
-#apt-get -y upgrade
-#apt-get -y install automake ant autopoint cmake build-essential libtool \
-#     patch pkg-config protobuf-compiler ragel subversion unzip git \
-#     openjdk-8-jre openjdk-8-jdk wget python gettext cvs yasm
-#apt-get -y install autoconf gawk gcc g++ m4
+apt-get update
+apt-get -y upgrade
+apt-get -y install automake ant autopoint cmake build-essential libtool \
+     patch pkg-config protobuf-compiler ragel subversion unzip git \
+     openjdk-8-jre openjdk-8-jdk wget python gettext cvs yasm
+apt-get -y install autoconf gawk gcc g++ m4
+
+dpkg --add-architecture i386
+apt-get update
+apt-get install zlib1g:i386 libstdc++6:i386 libc6:i386
 
 mkdir $HOME/android-sdk
 export ANDROID_HOME=$HOME/android-sdk
@@ -26,10 +30,10 @@ git clone http://git.videolan.org/git/vlc.git vlc
 cd vlc
 git checkout bdb4031
 cd ../..
-#$ANDROID_SDK/tools/bin/sdkmanager "platforms;android-26"
-#$ANDROID_SDK/tools/bin/sdkmanager "platform-tools"
-#$ANDROID_SDK/tools/bin/sdkmanager "build-tools;25.0.0"
-#./gradlew vlcBuild
+$ANDROID_SDK/tools/bin/sdkmanager "platforms;android-26"
+$ANDROID_SDK/tools/bin/sdkmanager "platform-tools"
+$ANDROID_SDK/tools/bin/sdkmanager "build-tools;25.0.0"
+./gradlew vlcBuild
 
 # if [ $CIRCLE_NODE_INDEX -eq 0 ]
 # then
