@@ -2,16 +2,16 @@ version: 2
 jobs:
   build:
     docker:
-      - image: ubuntu:zesty
+      - image: circleci/openjdk:8-jdk
     working_directory: ~/vlc-android-sdk
     steps:
+      - run:
+          name: Install packages
+          command: ./config/circleci/install-packages.sh
       - run: echo 'export ANDROID_HOME=$HOME/android-sdk' >> $BASH_ENV
       - run: echo 'export ANDROID_NDK=$ANDROID_HOME/android-ndk-r14b' >> $BASH_ENV
       - run: echo 'export ANDROID_SDK=$ANDROID_HOME' >> $BASH_ENV
       - checkout
-      - run:
-          name: Install packages
-          command: ./config/circleci/install-packages.sh
       - run:
           name: Install SDK
           command: ./config/circleci/install-sdk.sh
