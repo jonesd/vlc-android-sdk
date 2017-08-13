@@ -10,3 +10,7 @@ apt-get -y install autoconf gawk gcc g++ m4
 dpkg --add-architecture i386
 apt-get update
 apt-get -y install zlib1g:i386 libstdc++6:i386 libc6:i386
+
+useradd -ms /bin/bash  vlc
+su vlc
+cd $HOME
