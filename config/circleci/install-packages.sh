@@ -1,7 +1,5 @@
 #!/bin/bash
 
-cat /etc/issue
-
 sudo apt-get update
 sudo apt-get -y upgrade
 sudo apt-get -y install automake ant autopoint cmake build-essential libtool \
