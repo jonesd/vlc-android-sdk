@@ -9,6 +9,8 @@ sudo apt-get -y install automake ant autopoint cmake build-essential libtool \
 
 sudo apt-get -y install zlib1g:i386 libstdc++6:i386 libc6:i386
 
+sudo ldconfig -v
+
 # sudo apt-get update
 # sudo apt-get -y upgrade
 # sudo apt-get -y install automake ant autopoint cmake build-essential libtool \
