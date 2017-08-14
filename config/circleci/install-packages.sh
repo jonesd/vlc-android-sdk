@@ -1,5 +1,6 @@
 #!/bin/bash
 
+sudo add-apt-repository ppa:maarten-fonville/protobuf
 sudo dpkg --add-architecture i386
 # sudo apt-get update
 
