@@ -8,4 +8,5 @@ git clone http://git.videolan.org/git/vlc.git vlc
 cd vlc
 git checkout 591b2d2
 cd ../..
+pwd
 patch -p3 < vlc.patch

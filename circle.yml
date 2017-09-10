@@ -12,9 +12,9 @@ jobs:
       - run:
           name: Install packages
           command: ./config/circleci/install-packages.sh
-      - run:
-          name: Install protobuf
-          command: ./config/circleci/install-protobuf.sh
+#      - run:
+#          name: Install protobuf
+#          command: ./config/circleci/install-protobuf.sh
       - run:
           name: Install SDK
           command: ./config/circleci/install-sdk.sh
