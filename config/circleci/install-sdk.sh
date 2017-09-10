@@ -15,4 +15,4 @@ echo "84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_SDK/licenses/android
 
 $ANDROID_SDK/tools/bin/sdkmanager "platforms;android-26"
 $ANDROID_SDK/tools/bin/sdkmanager "platform-tools"
-$ANDROID_SDK/tools/bin/sdkmanager "build-tools;25.0.0"
+$ANDROID_SDK/tools/bin/sdkmanager "build-tools;26.0.1"
