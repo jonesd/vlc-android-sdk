@@ -8,4 +8,4 @@ git clone http://git.videolan.org/git/vlc.git vlc
 cd vlc
 git checkout 591b2d2
 cd ../..
-patch -p < protobuff.patch
+patch < protobuff.patch
