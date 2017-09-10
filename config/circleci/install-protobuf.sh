@@ -1,9 +1,10 @@
 
 # Make sure you grab the latest version
-curl -OL https://github.com/google/protobuf/releases/download/v2.6.0/protoc-2.6.0-linux-x86_64.zip
+# curl -OL https://github.com/google/protobuf/releases/download/v2.6.0/protoc-2.6.0-linux-x86_64.zip
+curl -OL https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.zip
 
 # Unzip
-unzip protoc-2.6.0-linux-x86_64.zip -d protoc3
+unzip protobuf-2.6.1.zip -d protoc3
 
 # Move protoc to /usr/local/bin/
 sudo mv protoc3/bin/* /usr/local/bin/
