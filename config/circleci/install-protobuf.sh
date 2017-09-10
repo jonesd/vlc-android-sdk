@@ -1,6 +1,6 @@
 
 # Make sure you grab the latest version
-curl -OL https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
+curl -OL https://github.com/google/protobuf/releases/download/v3.1.0/protoc-3.1.0-linux-x86_64.zip
 
 # Unzip
 unzip protoc-3.2.0-linux-x86_64.zip -d protoc3
