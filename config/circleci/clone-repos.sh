@@ -8,4 +8,4 @@ git clone http://git.videolan.org/git/vlc.git vlc
 cd vlc
 git checkout 591b2d2
 cd ../..
-patch < protobuff.patch
+patch -p1 vlc-android/vlc/extras/tools/bootstrap < protobuff.diff
