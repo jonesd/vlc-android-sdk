@@ -4,7 +4,7 @@ curl -OL https://github.com/google/protobuf/releases/download/v3.1.0/protoc-3.1.
 
 # Unzip
 unzip protoc-3.2.0-linux-x86_64.zip -d protoc3
-
+ls
 # Move protoc to /usr/local/bin/
 sudo mv protoc3/bin/* /usr/local/bin/
 
