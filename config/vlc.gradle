@@ -34,40 +34,6 @@ def architectures = [
 
 tasks.withType(Javadoc).all { enabled = false }
 
-task vlcAndroidClone {
-    group = 'Vlc'
-    description = 'Clone VLC Android source code'
-    doLast {
-      def repo = Grgit.clone(uri: VLC_ANDROID_SCM, dir: project.ext.vlcAndroidSource)
-      repo.checkout branch: "tags/${VLC_ANDROID_VERSION}"
-    }
-    onlyIf { !project.ext.vlcAndroidSource.exists() }
-}
-
-task vlcClone(dependsOn: 'vlcAndroidClone') {
-    group = 'Vlc'
-    description = 'Clone VLC Android source code'
-    doLast {
-        def repo = Grgit.clone(uri: VLC_SCM, dir: project.ext.vlcSource)
-        repo.checkout branch: VLC_TESTED_HASH
-    }
-    onlyIf { !project.ext.vlcSource.exists() }
-}
-
-//task vlcCheckout(dependsOn: 'vlcClone') {
-//    group = 'Vlc'
-//    description = 'Update VLC Android source code if exists'
-//    doLast {
-//        try {
-//            def repo = Grgit.open(project.ext.vlcSource)
-//            repo.pull(rebase: true)
-//        }
-//        catch (RuntimeException e) {
-//            logger.warn("Wasn't able to update checkout at ${project.ext.vlcSource} : ${e.getClass()}  - ${e.getLocalizedMessage()}");
-//        }
-//    }
-//    onlyIf { project.ext.vlcSource.exists() }
-//}
 
 task vlcPurge(type: Delete, dependsOn: ['vlcPurgeJava', 'vlcPurgeJni']) {
     group = 'Vlc'
