@@ -1,5 +1,5 @@
 #!/bin/bash
 
-./gradlew vlcBuildX86
+./gradlew vlcBuild
 # cd vlc-android
 # ./compile.sh
