@@ -1,5 +1,5 @@
 --- vlc-android/compile-libvlc.sh	2017-10-24 21:58:23.000000000 +0200
-+++ vlc-android/compile-libvlc-new.sh	2017-10-24 22:38:54.000000000 +0200
++++ vlc-android/compile-libvlc-new.sh	2017-10-26 17:54:22.000000000 +0200
 @@ -76,7 +76,7 @@
      --disable-sdl \
      --disable-SDL_image \
@@ -9,6 +9,15 @@
      --disable-kate \
      --disable-caca \
      --disable-gettext \
+@@ -93,7 +93,7 @@
+     --disable-aribb24 \
+     --disable-aribb25 \
+     --enable-mpg123 \
+-    --enable-libdsm \
++    --disable-libdsm \
+     --enable-libarchive \
+     --disable-libmpeg2 \
+     --enable-soxr \
 @@ -144,7 +144,7 @@
      --enable-mpg123 \
      --disable-dca \
