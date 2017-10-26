@@ -27,7 +27,7 @@ def architectures = [
         new Architecture('Arm', 'armeabi-v7a', '--release'),
         new Architecture('Arm64', 'arm64-v8a', '--release'),
 //        new Architecture('Mips', 'mips', '--release'),
-        new Architecture('Mips64', 'mips64', '--release'),
+//        new Architecture('Mips64', 'mips64', '--release'),
         new Architecture('X86', 'x86', '--release'),
         new Architecture('X86_64', 'x86_64', '--release')
 ]
