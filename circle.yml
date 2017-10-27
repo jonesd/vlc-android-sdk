@@ -24,12 +24,11 @@ jobs:
       - run:
           name: Compile
           command: ./config/circleci/run-tests.sh
-      - type: deploy
-          name: "Deploy release"
-          filters:
-            branches:
-              only: master
-          command: ./gradlew bintrayUpload
+      - deploy:
+          command: |
+                if [ "${CIRCLE_BRANCH}" == "master" ];
+                  then ./gradlew bintrayUpload
+                fi
 
 #machine:
 #  java:
