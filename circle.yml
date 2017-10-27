@@ -24,6 +24,12 @@ jobs:
       - run:
           name: Compile
           command: ./config/circleci/run-tests.sh
+      - type: deploy
+          name: "Deploy release"
+          filters:
+            branches:
+              only: master
+          command: ./gradlew bintrayUpload
 
 #machine:
 #  java:
