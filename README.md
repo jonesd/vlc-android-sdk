@@ -13,19 +13,14 @@ Just add this dependency to your project and you're good to go:
 ```
 buildscript {
   repositories {
-    maven {
-      url  "http://dl.bintray.com/butter-project/maven" 
-    }
+    jcenter()
   }
 }
 
 dependencies {
-  compile "com.butterproject:vlc-android-sdk:2.0.6"
+  compile "com.butterproject:vlc-android-sdk:2.5.5"
 }
 ```
-
-Current stable version is **2.0.6**. Although, there are newer versions of the **libVLC** library none of them has been officially pushed to the 
-main VLC Android application. So until this happens, it doesn't make sense to update this project.
 
 Building LibVLC Android SDK yourself
 ------------------------------------
@@ -42,13 +37,13 @@ Afterwards, simply run this Gradle command:
 The steps that this task will do are the following:
 
 1. The *VLC-Android* and the *VLC* repo will now get pulled if they haven't been previously.
-2. After that's done, the compilation process for the ABIs *armeabi-v7a*, *armeabi*, *x86* and *mips* gets started.
+2. After that's done, the compilation process for the ABIs *armeabi-v7a*, *armeabi*, *x86* and *x86_64* gets started.
 3. The resulting .so files will be copied into src/main/jniLibs.
 4. Finally, the resulting .java files will be copied over into the src/main/java folder of this project.
 
 You can see all related task to *VLC* just typing in your terminal and search for the group *VLC*:
 
-```./gradlew -q :tasks```
+```./gradlew tasks```
 
 Building a specific version of the LibVLC Android SDK       
 -----------------------------------------------------
@@ -61,7 +56,7 @@ cd vlc-android          // if this folder doesn't exist yet, simply run ./gradle
 git tag                 // to list all release versions
 git checkout {tag-name} // to checkout the git repo at the given tag
 cd ..
-./gradlew vlcBuild{architecture} // build it, where architecture can be arm, arm64, mips, mips64, x86, X86_64     
+./gradlew vlcBuild{architecture} // build it, where architecture can be arm, arm64, x86, X86_64
 ```
 
 By default, when you clone using the command `./gradlew vlcCloneAndroid` it will checkout automatically to the most stable version possible.
