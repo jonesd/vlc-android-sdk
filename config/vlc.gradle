@@ -3,11 +3,9 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'org.ajoberstar:gradle-git:1.7.0'
+        classpath 'org.ajoberstar:gradle-git:1.7.2'
     }
 }
-
-import org.ajoberstar.grgit.Grgit
 
 class Architecture {
 
@@ -51,27 +49,6 @@ task vlcPurgeJni(type: Delete) {
     delete 'src/main/jniLibs'
 }
 
-architectures.each {
-    def a = it
-    def compileArchitectureTaskName = "vlcCompile${a.taskName}"
-    task "${compileArchitectureTaskName}"(type: Exec) {
-        group = 'Vlc'
-        description = "Compile ${a.taskName} VLC architecture"
-        workingDir project.ext.vlcAndroidSource
-        commandLine './compile-libvlc.sh'
-        args '-a', a.architecture
-        args a.mode
-        onlyIf { project.ext.vlcAndroidSource.exists() }
-    }
-
-    task "vlcBuild${a.taskName}"(type: Copy, dependsOn: compileArchitectureTaskName) {
-        from "${project.ext.vlcAndroidSource.getAbsolutePath()}/libvlc/jni/libs/${a.architecture}/"
-        into "src/main/jniLibs/${a.architecture}/"
-        finalizedBy 'vlcCopyJavaFiles'
-        onlyIf { project.ext.vlcAndroidSource.exists() }
-    }
-}
-
 task vlcCopyJavaFiles(type: Copy) {
     group = 'Vlc'
     description = 'Copy source from VLC Android source code to project if exists'
@@ -83,5 +60,28 @@ task vlcCopyJavaFiles(type: Copy) {
 task vlcBuild() {
     group = 'Vlc'
     description = 'Build Vlc source code and copies resulting libVlc libraries into project'
-    dependsOn { tasks.findAll { task -> task.name.startsWith('vlcBuild') && task.name != 'vlcBuild' } }
+}
+
+architectures.each { a ->
+    def compileArchitectureTaskName = "vlcCompile${a.taskName}"
+    def compileTask = tasks.create(compileArchitectureTaskName, Exec) {
+        group = 'Vlc'
+        description = "Compile ${a.taskName} VLC architecture"
+        workingDir project.ext.vlcAndroidSource
+        commandLine './compile-libvlc.sh'
+        args '-a', a.architecture
+        args a.mode
+        onlyIf { project.ext.vlcAndroidSource.exists() }
+    }
+
+    def buildName = "vlcBuild${a.taskName}"
+    def buildTask = tasks.create(buildName, Copy) {
+        from "${project.ext.vlcAndroidSource.getAbsolutePath()}/libvlc/jni/libs/${a.architecture}/"
+        into "src/main/jniLibs/${a.architecture}/"
+        onlyIf { project.ext.vlcAndroidSource.exists() }
+    }
+
+    buildTask.dependsOn compileTask, vlcCopyJavaFiles
+
+    tasks.findByName("vlcBuild").dependsOn buildTask
 }
