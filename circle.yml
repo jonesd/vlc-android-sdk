@@ -21,8 +21,7 @@ jobs:
       - run:
           name: Compile
           command: ./config/circleci/run-tests.sh
-      - deploy:
-          command: |
-                if [ "${CIRCLE_BRANCH}" == "master" ]; then
-                  ./gradlew bintrayUpload
-                fi
+      - run:
+          name: Deploy
+          command: ./config/circleci/deploy.sh
+
