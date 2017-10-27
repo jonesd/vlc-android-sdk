@@ -22,7 +22,8 @@ version = VERSION_NAME
 group = GROUP
 
 repositories {
-    mavenCentral()
+    jcenter()
+    google()
 }
 
 android {
