@@ -5,6 +5,7 @@ jobs:
       - image: registry.videolan.org:5000/vlc-debian-android:latest
     working_directory: ~/vlc-android-sdk
     steps:
+      - run: su jenkins
       - run: echo 'export ANDROID_HOME=/sdk/android-sdk-linux' >> $BASH_ENV
       - run: echo 'export ANDROID_NDK=/sdk/android-ndk' >> $BASH_ENV
       - run: echo 'export ANDROID_SDK=$ANDROID_HOME' >> $BASH_ENV
