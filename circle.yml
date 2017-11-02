@@ -2,19 +2,19 @@ version: 2
 jobs:
   build:
     docker:
-      - image: blazsolar/vlc-android:zesty
+      - image: registry.videolan.org:5000/vlc-debian-android:latest
     working_directory: ~/vlc-android-sdk
     steps:
       - run: echo 'export ANDROID_HOME=$HOME/android-sdk' >> $BASH_ENV
       - run: echo 'export ANDROID_NDK=$ANDROID_HOME/android-ndk-r14b' >> $BASH_ENV
       - run: echo 'export ANDROID_SDK=$ANDROID_HOME' >> $BASH_ENV
       - checkout
-      - run:
-          name: Install packages
-          command: ./config/circleci/install-packages.sh
-      - run:
-          name: Install SDK
-          command: ./config/circleci/install-sdk.sh
+#      - run:
+#          name: Install packages
+#          command: ./config/circleci/install-packages.sh
+#      - run:
+#          name: Install SDK
+#          command: ./config/circleci/install-sdk.sh
       - run:
           name: Clone repos
           command: ./config/circleci/clone-repos.sh
