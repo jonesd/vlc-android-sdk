@@ -9,3 +9,4 @@ git checkout 8a3958c
 cd ../..
 # patch -p1 vlc-android/vlc/extras/tools/bootstrap < protobuff.patch
 # patch -p1 vlc-android/compile-libvlc.sh < zvbi.patch
+patch -p1 vlc-android/compile-libvlc.sh < compile-libvlc.patch
