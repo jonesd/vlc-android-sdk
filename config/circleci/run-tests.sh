@@ -1,8 +1,11 @@
 #!/bin/bash
 
-# ./gradlew vlcBuild
 cd vlc-android
-./compile.sh -l --no-ml
 
+# Arm v7
+./compile.sh -l --no-ml --release -a armeabi-v7a
+mkdir -p ../src/main/jniLibs/armeabi-v7a
+cp /libvlc/jni/libs/armeabi-v7a/ ../src/main/jniLibs/armeabi-v7a/
 
-# --debug=b --jobs=1
+# Java files
+cp /libvlc/src/ ../src/main/java
