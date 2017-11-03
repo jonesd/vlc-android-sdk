@@ -9,9 +9,9 @@ jobs:
       - run: echo 'export ANDROID_NDK=/sdk/android-ndk' >> $BASH_ENV
       - run: echo 'export ANDROID_SDK=$ANDROID_HOME' >> $BASH_ENV
       - checkout
-      - run:
-          name: Install packages
-          command: ./config/circleci/install-packages.sh
+#      - run:
+#          name: Install packages
+#          command: ./config/circleci/install-packages.sh
       - run:
           name: Install SDK
           command: ./config/circleci/install-sdk.sh

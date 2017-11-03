@@ -2,4 +2,4 @@
 
 # ./gradlew vlcBuild
 cd vlc-android
-./compile.sh
+./compile.sh --no-ml
