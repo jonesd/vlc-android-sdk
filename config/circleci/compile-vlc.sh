@@ -2,12 +2,18 @@
 
 cd vlc-android
 
-echo "Build armeabi-v7a"
-./compile.sh -l --no-ml --release -a armeabi-v7a
+archs=( armeabi-v7a arm64-v8a x86 x86_64 )
 
-echo "Copy native lib for armeabi-v7a"
-mkdir -p ../src/main/jniLibs/armeabi-v7a
-cp -r libvlc/jni/libs/armeabi-v7a/ ../src/main/jniLibs/armeabi-v7a/
+for a in "${archs[@]}"
+do
+    echo "Build $a"
+    ./compile.sh -l --no-ml --release -a $a
+
+    echo "Copy native lib for $a"
+    mkdir -p ../src/main/jniLibs/$a
+    cp -r libvlc/jni/libs/$a/ ../src/main/jniLibs/$a/
+
+done
 
 echo "Copy java files"
 cp -r libvlc/src/ ../src/main/java
