@@ -18,9 +18,9 @@ jobs:
       - run:
           name: Clone repos
           command: ./config/circleci/clone-repos.sh
-      - run:
-          name: Compile
-          command: ./config/circleci/run-tests.sh
+#      - run:
+#          name: Compile
+#          command: ./config/circleci/run-tests.sh
       - run:
           name: Deploy
           command: ./config/circleci/deploy.sh
