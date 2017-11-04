@@ -14,7 +14,6 @@ plugins {
 }
 
 apply from: './config/dependencies.gradle'
-apply from: './config/vlc.gradle'
 
 apply plugin: 'com.android.library'
 
@@ -33,8 +32,12 @@ android {
     defaultConfig {
         minSdkVersion rootProject.ext.minSdk
         targetSdkVersion rootProject.ext.targetSdk
-        versionCode 1
+        versionCode VERSION_CODE as int
         versionName VERSION_NAME
+
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+        }
     }
 
     buildTypes {
@@ -50,8 +53,8 @@ android {
 }
 
 dependencies {
-    compile "com.android.support:support-v4:${rootProject.ext.supportVersion}"
-    compile "com.android.support:support-annotations:${rootProject.ext.supportVersion}"
+    compile "com.android.support:support-v4:${rootProject.ext.appCompatVersion}"
+    compile "com.android.support:support-annotations:${rootProject.ext.appCompatVersion}"
 }
 
 

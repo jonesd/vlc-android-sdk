@@ -1,9 +1,7 @@
 ext {
-    buildToolsVersion = "26.0.1"
+    buildToolsVersion = "26.0.2"
     targetSdk = 26
     compileSdk = 26
     minSdk = 16
-    supportVersion = '25.3.1'
-    vlcAndroidSource = file('vlc-android')
-    vlcSource = file('vlc-android/vlc')
+    appCompatVersion = '25.2.0'
 }
