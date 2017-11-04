@@ -2,8 +2,7 @@
 
 cd vlc-android
 
-# archs=( armeabi-v7a arm64-v8a x86 x86_64 )
-archs=( x86_64 )
+archs=( armeabi-v7a arm64-v8a x86 x86_64 )
 
 for a in "${archs[@]}"
 do
@@ -13,6 +12,8 @@ do
     echo "Copy native lib for $a"
     mkdir -p ../src/main/jniLibs/$a
     cp -r libvlc/jni/libs/$a/ ../src/main/jniLibs/
+    cp -r libvlc/jni/loader/libs/$a/ ../src/main/jniLibs/
+    cp -r libvlc/private_libs/libs/$a/ ../src/main/jniLibs/
 done
 
 echo "Copy java files"
