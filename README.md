@@ -18,9 +18,11 @@ buildscript {
 }
 
 dependencies {
-  compile "com.butterproject:vlc-android-sdk:2.5.5"
+  compile "com.butterproject:vlc-android-sdk:2.5.7"
 }
 ```
+
+Versions correspond with libVLC versions.
 
 Building LibVLC Android SDK yourself
 ------------------------------------
@@ -30,22 +32,20 @@ Building LibVLC Android SDK yourself
 To build a fresh version of the *libVLC* Android SDK, please make sure that you have setup your machine correctly following the official 
 Wiki (You can ignore the steps after and including 'Building'): https://wiki.videolan.org/AndroidCompile
 
+Firs you need to compile libVLC for android. So you need to clone repo into `vlc-android` directory. You can easily do
+that by calling `config/circleci/clone-repos.sh` bash script. Note that script will also modify `compile-libvlc.sh` file
+in cloned repo. This is so we can run code on CircleCI with limited resources available.
+
+Then you can compile libVLC by executing `config/circleci/compile-vlc.sh` bash script. This will compile libVLC and copy all
+necessary file into root project.
+
 Afterwards, simply run this Gradle command:
 
-```./gradlew vlcBuild```
+```./gradlew assembleRelease```
 
-The steps that this task will do are the following:
+Project will be compiled for *armeabi-v7a*, *armeabi*, *x86* and *x86_64* architecture.
 
-1. The *VLC-Android* and the *VLC* repo will now get pulled if they haven't been previously.
-2. After that's done, the compilation process for the ABIs *armeabi-v7a*, *armeabi*, *x86* and *x86_64* gets started.
-3. The resulting .so files will be copied into src/main/jniLibs.
-4. Finally, the resulting .java files will be copied over into the src/main/java folder of this project.
-
-You can see all related task to *VLC* just typing in your terminal and search for the group *VLC*:
-
-```./gradlew tasks```
-
-Building a specific version of the LibVLC Android SDK       
+Building a specific version of the LibVLC Android SDK
 -----------------------------------------------------
 
 If you want to build a specific version (maybe you want a major stable release) you have to checkout the *vlc-android* git repository at 
@@ -59,7 +59,7 @@ cd ..
 ./gradlew vlcBuild{architecture} // build it, where architecture can be arm, arm64, x86, X86_64
 ```
 
-By default, when you clone using the command `./gradlew vlcCloneAndroid` it will checkout automatically to the most stable version possible.
+By default, when you clone using the `clone-repos.sh` bash script it will checkout automatically to the latest stable version.
 
 Reporting issues
 -----------------
