@@ -1,5 +1,5 @@
 #!/bin/bash
 
 if [ "${CIRCLE_BRANCH}" == "master" ]; then
-  ./gradlew bintrayUpload
+  ./gradlew clean bintrayUpload
 fi
