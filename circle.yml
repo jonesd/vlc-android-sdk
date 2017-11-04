@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: blazsolar/vlc-android:debian
+      - image: butterproject/vlc-android:latest
     working_directory: ~/vlc-android-sdk
     steps:
       - run: echo 'export ANDROID_HOME=/sdk/android-sdk-linux' >> $BASH_ENV
