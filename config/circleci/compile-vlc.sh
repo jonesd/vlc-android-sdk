@@ -2,7 +2,8 @@
 
 cd vlc-android
 
-archs=( armeabi-v7a arm64-v8a x86 x86_64 )
+# archs=( armeabi-v7a arm64-v8a x86 x86_64 )
+archs=( x86_64 )
 
 for a in "${archs[@]}"
 do
