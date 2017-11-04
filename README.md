@@ -18,11 +18,11 @@ buildscript {
 }
 
 dependencies {
-  compile "com.butterproject:vlc-android-sdk:2.5.7"
+  compile "com.butterproject:vlc-android-sdk:2.5.7.1"
 }
 ```
 
-Versions correspond with libVLC versions.
+Versions correspond with libVLC versions. Optional forth digit is for internal releases for same libVLC version.
 
 Building LibVLC Android SDK yourself
 ------------------------------------
