@@ -5,7 +5,7 @@ git clone https://code.videolan.org/videolan/vlc-android.git vlc-android
 cd vlc-android
 
 echo "Checkout tag"
-git checkout 2.5.7
+git checkout 2.5.8
 cd ..
 
 echo "Patch compile options"
