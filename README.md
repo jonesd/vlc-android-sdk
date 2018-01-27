@@ -18,7 +18,7 @@ buildscript {
 }
 
 dependencies {
-  compile "com.butterproject:vlc-android-sdk:2.5.14"
+  compile "com.butterproject:vlc-android-sdk:2.9.0"
 }
 ```
 
