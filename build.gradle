@@ -77,7 +77,7 @@ bintray {
         labels = ['android', 'vlc', 'video', 'player']
         publicDownloadNumbers = true
 
-        githubRepo = 'butterproject/vlc-android-sdk'
+        githubRepo = 'jonesd/vlc-android-sdk'
         githubReleaseNotesFile = 'README.md'
     }
 }
