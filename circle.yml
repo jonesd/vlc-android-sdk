@@ -5,6 +5,7 @@ jobs:
       - image: butterproject/vlc-android:latest
     working_directory: ~/vlc-android-sdk
     steps:
+      - run: echo $BASH_ENV
       - run: echo 'export ANDROID_HOME=/sdk/android-sdk-linux' >> $BASH_ENV
       - run: echo 'export ANDROID_NDK=/sdk/android-ndk' >> $BASH_ENV
       - run: echo 'export ANDROID_SDK=$ANDROID_HOME' >> $BASH_ENV
@@ -18,4 +19,6 @@ jobs:
       - run:
           name: Deploy
           command: ./config/circleci/deploy.sh
+      - store_artifacts:
+                path: ./build/outputs
 
